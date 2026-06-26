@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 所有对话内容必须使用中文输出。用户文档用中文，类名、配置键、CLI 参数保持英文。
 
+## Git 提交身份
+
+本项目所有 commit 必须使用以下身份（已写入 `git config --local`）：
+
+- **作者 / 提交者**：`Goodenough <2323342501@qq.com>`
+
+不要使用全局 git 身份提交本仓库。若本机 `git config --global user.name` 不是 Goodenough，仓库本地配置会覆盖全局，提交前可用 `git config user.name && git config user.email` 验证。
+
+GitHub 端：2323342501@qq.com 需在 Goodenough 账号的 Settings → Emails 中验证，commit 才会关联到该账号的头像与贡献图。
+
 ## 项目概述
 
 FinFlow 是个人记账应用，双端实现，按平台分目录：
