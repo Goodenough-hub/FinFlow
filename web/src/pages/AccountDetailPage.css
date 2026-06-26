@@ -1,0 +1,183 @@
+.account-detail-page {
+  padding-bottom: calc(48px + env(safe-area-inset-bottom));
+}
+
+.account-detail-page .form-header {
+  padding-top: calc(12px + env(safe-area-inset-top));
+}
+
+.balance-card {
+  padding: 20px;
+}
+
+.balance-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.balance-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.balance-type {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.balance-amount {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.balance-amount.negative {
+  color: var(--overspend-red);
+}
+
+.balance-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.monthly-card {
+  padding: 16px;
+}
+
+.monthly-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.month-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-nav {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-card-elevated);
+  border-radius: 50%;
+}
+
+.month-nav:active {
+  background: var(--accent-tint);
+  color: var(--accent-blue);
+}
+
+.month-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 110px;
+  text-align: center;
+}
+
+.recharge-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-blue), #3B6FD8);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.recharge-btn:active {
+  transform: scale(0.96);
+}
+
+.monthly-stats {
+  display: flex;
+  align-items: stretch;
+}
+
+.stat-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.stat-value.income { color: var(--income-green); }
+.stat-value.expense { color: var(--expense-gold); }
+.stat-value.net { color: var(--transfer-blue); }
+
+.stat-divider {
+  width: 0.5px;
+  background: var(--divider);
+  margin: 4px 0;
+}
+
+.flow-section {
+  margin-top: 20px;
+}
+
+.flow-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px 8px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.section-count {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.flow-list {
+  padding: 4px 14px;
+}
+
+.flow-row {
+  cursor: pointer;
+}
+
+.flow-row:active {
+  opacity: 0.6;
+}

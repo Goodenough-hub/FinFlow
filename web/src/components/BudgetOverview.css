@@ -1,0 +1,131 @@
+.budget-overview {
+  margin-bottom: 12px;
+}
+
+.budget-overview-card {
+  padding: 14px 16px;
+}
+
+.bo-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bo-total-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-total-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.5px;
+}
+
+.bo-total-amounts {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.bo-spent {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bo-separator {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.bo-budget {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.bo-total-percent {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.bo-total-bar {
+  height: 6px;
+  background: var(--bg-card-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.bo-total-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background 0.2s;
+}
+
+.bo-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+
+.bo-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bo-row-amount {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  white-space: nowrap;
+}
+
+.bo-row-bar {
+  height: 4px;
+  background: var(--bg-card-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bo-row-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.2s;
+}
+
+.bo-row-percent {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  min-width: 36px;
+  text-align: right;
+}

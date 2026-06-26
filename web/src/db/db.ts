@@ -17,6 +17,13 @@ export class FinFlowDB extends Dexie {
       budgets: 'id, [year+month], categoryId',
       recurring: 'id, nextDate, frequency'
     })
+    this.version(2).stores({
+      transactions: 'id, type, date, categoryId, accountId, createdAt',
+      categories: 'id, type, parentId, sortOrder, [type+parentId]',
+      accounts: 'id, type, sortOrder',
+      budgets: 'id, [year+month], categoryId',
+      recurring: 'id, nextDate, frequency'
+    })
   }
 }
 

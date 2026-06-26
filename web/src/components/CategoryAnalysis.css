@@ -52,7 +52,7 @@
 }
 
 .crumb.active {
-  background: rgba(91, 141, 239, 0.12);
+  background: var(--accent-tint);
   color: var(--accent-blue);
   border-color: transparent;
   font-weight: 600;
@@ -86,7 +86,7 @@
   color: var(--accent-blue);
   font-size: 12px;
   font-weight: 500;
-  background: rgba(91, 141, 239, 0.1);
+  background: var(--accent-tint);
 }
 
 .breakdown-list {
@@ -170,7 +170,7 @@
   left: 44px;
   right: 0;
   height: 0.5px;
-  background: rgba(44, 44, 46, 0.4);
+  background: var(--divider);
 }
 
 .category-total {

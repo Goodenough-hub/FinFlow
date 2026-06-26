@@ -12,6 +12,7 @@ import {
   siblingsOf
 } from '../utils/category'
 import { asCurrency, formatPercent } from '../utils/format'
+import { chartColors } from '../utils/chartTheme'
 import CategoryIcon from './CategoryIcon'
 import './CategoryAnalysis.css'
 
@@ -115,13 +116,14 @@ export default function CategoryAnalysis({ transactions, type }: Props) {
 
   const typeLabel = type === 'income' ? '收入' : '支出'
 
+  const c = chartColors()
   const pieOption = {
     tooltip: {
       trigger: 'item',
-      backgroundColor: 'rgba(26, 26, 30, 0.95)',
-      borderColor: 'rgba(44, 44, 46, 0.6)',
+      backgroundColor: c.tooltipBg,
+      borderColor: c.tooltipBorder,
       borderWidth: 1,
-      textStyle: { color: '#fff', fontSize: 12 },
+      textStyle: { color: c.textPrimary, fontSize: 12 },
       formatter: (p: { name: string; value: number; percent: number }) =>
         `${p.name}<br/>¥${p.value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })} (${p.percent}%)`
     },
@@ -131,11 +133,11 @@ export default function CategoryAnalysis({ transactions, type }: Props) {
         radius: ['58%', '92%'],
         center: ['50%', '50%'],
         avoidLabelOverlap: true,
-        itemStyle: { borderColor: 'var(--bg-card)', borderWidth: 2, borderRadius: 4 },
+        itemStyle: { borderColor: c.bgElevated, borderWidth: 2, borderRadius: 4 },
         label: {
           show: true,
           position: 'inside',
-          color: '#fff',
+          color: c.textPrimary,
           fontSize: 10,
           fontWeight: 500,
           formatter: (p: { name: string; percent: number }) =>

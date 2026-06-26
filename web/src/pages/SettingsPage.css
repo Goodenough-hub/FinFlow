@@ -1,0 +1,120 @@
+.settings-page {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.settings-group {
+  margin-bottom: 20px;
+}
+
+.group-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 0 4px 8px;
+}
+
+.group-card {
+  padding: 4px 14px;
+  margin-bottom: 0;
+}
+
+.seg-row {
+  display: flex;
+  background: var(--bg-card-elevated);
+  border-radius: 10px;
+  padding: 3px;
+  margin: 8px 0;
+}
+
+.seg-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.seg-btn.active {
+  background: var(--accent-blue);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.stat-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0.5px;
+  background: var(--divider);
+}
+
+.stat-row strong {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-weight: 500;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  text-align: left;
+  position: relative;
+}
+
+.action-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 36px;
+  right: 0;
+  height: 0.5px;
+  background: var(--divider);
+}
+
+.action-row:active {
+  opacity: 0.6;
+}
+
+.action-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.action-label {
+  flex: 1;
+}
+
+.action-chevron {
+  color: var(--text-tertiary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.action-row.danger .action-label,
+.action-row.danger .action-icon {
+  color: var(--overspend-red);
+}

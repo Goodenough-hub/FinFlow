@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import type { Transaction, TransactionType } from '../db/models'
@@ -6,13 +7,17 @@ import { filterByPeriod } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
 import PeriodPicker from '../components/PeriodPicker'
 import SummaryCard from '../components/SummaryCard'
+import BudgetOverview from '../components/BudgetOverview'
 import DailyBarChart from '../components/DailyBarChart'
 import CategoryAnalysis from '../components/CategoryAnalysis'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
+import OverspendAlertBanner from '../components/OverspendAlertBanner'
+import DailyReportList from '../components/DailyReportList'
 import './HomePage.css'
 
 export default function HomePage() {
+  const navigate = useNavigate()
   const [period, setPeriod] = useState<StatPeriod>('month')
   const [date, setDate] = useState<Date>(new Date())
   const [categoryTab, setCategoryTab] = useState<TransactionType>('expense')
@@ -43,6 +48,7 @@ export default function HomePage() {
     <div className="page home-page">
       <header className="page-header">
         <h1>FinFlow</h1>
+        <button className="header-icon" onClick={() => navigate('/search')} aria-label="搜索">🔍</button>
       </header>
 
       <PeriodPicker
@@ -53,6 +59,10 @@ export default function HomePage() {
       />
 
       <SummaryCard income={totals.income} expense={totals.expense} balance={totals.balance} />
+
+      <OverspendAlertBanner />
+
+      <BudgetOverview />
 
       {filtered.length === 0 ? (
         <div className="card">
@@ -84,6 +94,8 @@ export default function HomePage() {
             </div>
             <CategoryAnalysis key={categoryTab} transactions={filtered} type={categoryTab} />
           </div>
+
+          {period === 'month' && <DailyReportList transactions={filtered} />}
         </>
       )}
 

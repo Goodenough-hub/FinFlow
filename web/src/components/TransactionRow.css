@@ -13,7 +13,7 @@
   left: 48px;
   right: 0;
   height: 0.5px;
-  background: rgba(44, 44, 46, 0.4);
+  background: var(--divider);
 }
 
 .tx-info {
@@ -39,12 +39,27 @@
   text-overflow: ellipsis;
 }
 
+.tx-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 .tx-amount {
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   white-space: nowrap;
+}
+
+.tx-time {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
 .tx-row.skeleton {

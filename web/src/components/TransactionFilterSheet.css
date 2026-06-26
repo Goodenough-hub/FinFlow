@@ -1,0 +1,122 @@
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+}
+
+.filter-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.filter-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-blue);
+}
+
+.filter-clear-mini {
+  font-size: 11px;
+  color: var(--accent-blue);
+  padding: 2px 6px;
+}
+
+.type-segmented {
+  display: flex;
+  background: var(--bg-card-elevated);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.type-segmented button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.type-segmented button.active {
+  background: var(--accent-tint);
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.multi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.multi-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  background: var(--bg-card-elevated);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  transition: all 0.15s;
+}
+
+.multi-cell.active {
+  background: var(--accent-tint);
+  border-color: var(--accent-blue);
+}
+
+.multi-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multi-cell.active .multi-name {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.range-row .form-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.range-sep {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}

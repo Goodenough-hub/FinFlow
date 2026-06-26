@@ -1,5 +1,6 @@
 import { db, uid } from './db'
 import type { Category, Account, CategoryType, AccountType } from './models'
+import { accountTypeColor, accountTypeIcon, accountTypeLabel } from './models'
 
 interface SeedNode {
   name: string
@@ -149,24 +150,18 @@ export async function seedIfNeeded(): Promise<void> {
 
   const accounts: Account[] = defaultAccounts.map(({ type, order }) => ({
     id: uid(),
-    name: accountLabel(type),
+    name: accountTypeLabel[type],
     type,
+    icon: accountTypeIcon[type],
+    colorHex: accountTypeColor[type],
+    initialBalance: 0,
     sortOrder: order,
-    isSystem: true
+    isSystem: true,
+    createdAt: new Date().toISOString()
   }))
 
   await db.categories.bulkAdd(categories)
   await db.accounts.bulkAdd(accounts)
 
   localStorage.setItem(SEED_FLAG_KEY, '1')
-}
-
-function accountLabel(type: AccountType): string {
-  switch (type) {
-    case 'alipay': return '支付宝'
-    case 'wechat': return '微信'
-    case 'unionpay': return '银行卡'
-    case 'fixed': return '定期'
-    default: return '其他'
-  }
 }

@@ -1,0 +1,189 @@
+.calendar-view {
+  padding: 16px;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.cal-nav {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-card-elevated);
+  border-radius: 50%;
+}
+
+.cal-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cal-nav:not(:disabled):active {
+  background: var(--accent-tint);
+  color: var(--accent-blue);
+}
+
+.cal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 130px;
+  text-align: center;
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  padding: 4px 0;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  min-height: 56px;
+  padding: 4px 2px;
+  background: transparent;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cal-cell.empty {
+  background: transparent;
+  pointer-events: none;
+}
+
+.cal-cell.has-data {
+  background: var(--bg-card-elevated);
+  border-color: var(--divider);
+}
+
+.cal-cell.today {
+  background: linear-gradient(135deg, var(--accent-blue), #3B6FD8);
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.cal-cell.today .cal-day {
+  color: #fff;
+  font-weight: 700;
+}
+
+.cal-cell.today .cal-income {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cal-cell.today .cal-expense {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cal-cell.selected {
+  border-color: var(--accent-blue);
+}
+
+.cal-day {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cal-amounts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 9px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.cal-income { color: var(--income-green); }
+.cal-expense { color: var(--expense-gold); }
+
+.day-sheet-summary {
+  display: flex;
+  background: var(--bg-card-elevated);
+  border-radius: 12px;
+  padding: 12px 0;
+  margin-bottom: 12px;
+}
+
+.day-summary-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.day-summary-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.day-summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.day-summary-value.income { color: var(--income-green); }
+.day-summary-value.expense { color: var(--expense-gold); }
+
+.day-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--bg-card-elevated);
+  border-radius: 12px;
+  padding: 4px 14px;
+}
+
+.day-sheet-row {
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--divider);
+  cursor: pointer;
+}
+
+.day-sheet-row:last-child {
+  border-bottom: none;
+}
+
+.day-sheet-row:active {
+  opacity: 0.6;
+}

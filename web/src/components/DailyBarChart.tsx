@@ -4,6 +4,7 @@ import type { Transaction } from '../db/models'
 import type { StatPeriod } from '../utils/date'
 import { daysInMonth, dayKey, monthKey } from '../utils/date'
 import { formatCompact } from '../utils/format'
+import { chartColors } from '../utils/chartTheme'
 import './DailyBarChart.css'
 
 interface Props {
@@ -52,77 +53,80 @@ export default function DailyBarChart({ transactions, period, date }: Props) {
   const xValues = period === 'month' ? [1, 5, 10, 15, 20, 25, 30] : Array.from({ length: 12 }, (_, i) => i + 1)
   const xLabel = period === 'month' ? '日' : '月'
 
-  const option = useMemo(() => ({
-    grid: { left: 44, right: 16, top: 16, bottom: 28 },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      backgroundColor: 'rgba(26, 26, 30, 0.95)',
-      borderColor: 'rgba(44, 44, 46, 0.6)',
-      borderWidth: 1,
-      textStyle: { color: '#fff', fontSize: 12 },
-      formatter: (params: Array<{ axisValue: number; seriesName: string; value: number }>) => {
-        const title = `${xLabel} ${params[0]?.axisValue ?? ''}`
-        const lines = params
-          .map(p => `${p.seriesName}: ¥${p.value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`)
-          .join('<br/>')
-        return `${title}<br/>${lines}`
-      }
-    },
-    legend: {
-      data: ['收入', '支出'],
-      top: 0,
-      right: 0,
-      itemWidth: 8,
-      itemHeight: 8,
-      icon: 'circle',
-      textStyle: { color: '#8E8E93', fontSize: 11 }
-    },
-    xAxis: {
-      type: 'value',
-      min: period === 'month' ? 1 : 1,
-      max: period === 'month' ? daysInMonth(date) : 12,
-      interval: period === 'month' ? 1 : 1,
-      axisLabel: {
-        color: '#636366',
-        fontSize: 10,
-        formatter: (v: number) => (xValues.includes(v) ? String(v) : '')
+  const option = useMemo(() => {
+    const c = chartColors()
+    return {
+      grid: { left: 44, right: 16, top: 16, bottom: 28 },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        backgroundColor: c.tooltipBg,
+        borderColor: c.tooltipBorder,
+        borderWidth: 1,
+        textStyle: { color: c.textPrimary, fontSize: 12 },
+        formatter: (params: Array<{ axisValue: number; seriesName: string; value: number }>) => {
+          const title = `${xLabel} ${params[0]?.axisValue ?? ''}`
+          const lines = params
+            .map(p => `${p.seriesName}: ¥${p.value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`)
+            .join('<br/>')
+          return `${title}<br/>${lines}`
+        }
       },
-      axisLine: { lineStyle: { color: 'rgba(44, 44, 46, 0.6)' } },
-      axisTick: { show: false },
-      splitLine: { show: false }
-    },
-    yAxis: {
-      type: 'value',
-      axisLabel: {
-        color: '#636366',
-        fontSize: 10,
-        formatter: (v: number) => formatCompact(v)
+      legend: {
+        data: ['收入', '支出'],
+        top: 0,
+        right: 0,
+        itemWidth: 8,
+        itemHeight: 8,
+        icon: 'circle',
+        textStyle: { color: c.text, fontSize: 11 }
       },
-      axisLine: { show: false },
-      axisTick: { show: false },
-      splitLine: { lineStyle: { color: 'rgba(44, 44, 46, 0.5)', type: 'dashed' } }
-    },
-    series: [
-      {
-        name: '收入',
-        type: 'bar',
-        data: buckets.map(b => [b.xValue, b.income]),
-        itemStyle: { color: '#34D399', borderRadius: [3, 3, 0, 0] },
-        barWidth: '40%',
-        barGap: '10%',
-        animationDelay: (i: number) => i * 20
+      xAxis: {
+        type: 'value',
+        min: period === 'month' ? 1 : 1,
+        max: period === 'month' ? daysInMonth(date) : 12,
+        interval: period === 'month' ? 1 : 1,
+        axisLabel: {
+          color: c.textMuted,
+          fontSize: 10,
+          formatter: (v: number) => (xValues.includes(v) ? String(v) : '')
+        },
+        axisLine: { lineStyle: { color: c.axis } },
+        axisTick: { show: false },
+        splitLine: { show: false }
       },
-      {
-        name: '支出',
-        type: 'bar',
-        data: buckets.map(b => [b.xValue, b.expense]),
-        itemStyle: { color: '#F59E0B', borderRadius: [3, 3, 0, 0] },
-        barWidth: '40%',
-        animationDelay: (i: number) => i * 20 + 100
-      }
-    ]
-  }), [buckets, period, date, xValues, xLabel])
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          color: c.textMuted,
+          fontSize: 10,
+          formatter: (v: number) => formatCompact(v)
+        },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: { lineStyle: { color: c.grid, type: 'dashed' } }
+      },
+      series: [
+        {
+          name: '收入',
+          type: 'bar',
+          data: buckets.map(b => [b.xValue, b.income]),
+          itemStyle: { color: c.income, borderRadius: [3, 3, 0, 0] },
+          barWidth: '40%',
+          barGap: '10%',
+          animationDelay: (i: number) => i * 20
+        },
+        {
+          name: '支出',
+          type: 'bar',
+          data: buckets.map(b => [b.xValue, b.expense]),
+          itemStyle: { color: c.expense, borderRadius: [3, 3, 0, 0] },
+          barWidth: '40%',
+          animationDelay: (i: number) => i * 20 + 100
+        }
+      ]
+    }
+  }, [buckets, period, date, xValues, xLabel])
 
   const title = period === 'month' ? '月收支趋势' : '年收支趋势'
   const subtitle = `横：${xLabel}　纵：金额（¥）`

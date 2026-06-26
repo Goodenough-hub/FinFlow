@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import './MainLayout.css'
 
 const tabs = [
@@ -8,12 +8,27 @@ const tabs = [
   { to: '/settings', label: '设置', icon: '⚙️' }
 ]
 
+const FAB_ROUTES = ['/', '/transactions']
+
 export default function MainLayout() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const showFab = FAB_ROUTES.includes(location.pathname)
+
   return (
     <div className="app-shell">
       <main className="app-main">
         <Outlet />
       </main>
+      {showFab && (
+        <button
+          className="fab"
+          onClick={() => navigate('/transactions/new')}
+          aria-label="记一笔"
+        >
+          <span className="fab-plus">+</span>
+        </button>
+      )}
       <nav className="tab-bar">
         {tabs.map(t => (
           <NavLink
