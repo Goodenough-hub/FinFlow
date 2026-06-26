@@ -1,0 +1,26 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-tertiary);
+  padding: 24px 16px;
+}
+
+.empty-state .empty-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.empty-state .empty-title {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.empty-state .empty-subtitle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}

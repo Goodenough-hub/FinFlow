@@ -1,0 +1,77 @@
+.summary-card {
+  padding: 22px 20px;
+  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-card-elevated) 100%);
+}
+
+.summary-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.summary-arrow {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.summary-balance {
+  font-size: 38px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  margin-bottom: 22px;
+  font-feature-settings: 'tnum';
+}
+
+.summary-stats {
+  display: flex;
+  align-items: stretch;
+}
+
+.summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.summary-divider {
+  width: 0.5px;
+  background: var(--card-border);
+  margin: 4px 0;
+}
+
+.summary-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.summary-stat-label span {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.summary-stat-amount {
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.2px;
+}
