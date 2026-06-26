@@ -1,61 +1,92 @@
 # FinFlow
 
-一款本地优先的个人记账应用，深色仪表盘风格，支持父子分类层级、预算管理、周期账单、CSV 导入导出。数据全部存储在设备本地（SwiftData），不上云、不联网。
+本地优先的个人记账应用。深色仪表盘风格，父子分类层级、预算管理、周期账单、CSV 导入导出。数据全部存本地，不上云、不联网。
+
+## 双端实现
+
+同一套产品逻辑，两套独立实现：
+
+| 端 | 位置 | 技术栈 | 状态 |
+|---|---|---|---|
+| iOS / iPadOS / visionOS | [`ios/`](./ios) | SwiftUI + SwiftData + Swift Charts | 已完成 |
+| Web (PWA) | 根目录 + [`src/`](./src) | React + Vite + TypeScript + Dexie + ECharts | 进行中 |
+
+两端数据互不相通（iOS 用 SwiftData，PWA 用 IndexedDB），但数据模型、分类种子、业务逻辑保持对齐。
 
 ## 功能
 
-- **首页仪表盘**：月/年收支概览，日收支趋势柱状图，分类占比饼图（支持父子分类下钻），最近记录
-- **账单**：按周期、分类、账户、关键词筛选；按日分组；底部结余栏
-- **资产**：多账户管理（支付宝/微信/银行卡/定期），账户余额与交易流水
-- **预算**：按分类设月度预算，超支预警横幅
-- **周期账单**：自动生成周期性交易（月/周/年）
-- **分类管理**：父子层级任意深度，拖动排序，系统分类预置
-- **设置**：外观（跟随系统/深色/浅色）、CSV 导入导出、填充测试数据
+- 月/年收支概览，日趋势柱状图
+- 分类占比图，支持父子分类下钻
+- 账单管理与多维度筛选
+- 多账户资产管理
+- 分类预算与超支预警
+- 周期账单自动生成
+- 父子分类层级管理（任意深度，拖动排序）
+- CSV 导入导出
+- 外观偏好（跟随系统/深色/浅色）
 
-## 技术栈
+## PWA 端开发
 
-- SwiftUI + SwiftData
-- Swift Charts
-- iOS 26.5+ / macOS 26.5+
-- 部署目标：iPhone、iPad、Vision Pro
-- 无第三方依赖
+```bash
+# 安装依赖
+npm install
 
-## 项目结构
+# 开发服务器（http://localhost:5075）
+npm run dev
+
+# 生产构建（输出 dist/）
+npm run build
+
+# 预览生产构建
+npm run preview
+
+# 类型检查
+npm run typecheck
+```
+
+### PWA 安装
+
+- **桌面 Chrome/Edge**：访问应用 → 地址栏右侧安装图标 → 安装
+- **Android Chrome**：菜单 → 添加到主屏幕
+- **iOS Safari**：分享 → 添加到主屏幕（iOS 限制：无后台推送、存储可能被清理）
+
+Service Worker 自动注册，离线可访问。`vite-plugin-pwa` 在构建时生成 `manifest.webmanifest` 和 `sw.js`。
+
+### 图标生成
+
+```bash
+python3 scripts/generate_pwa_icons.py
+```
+
+需要 Pillow (`pip install pillow`)。生成 192/512/maskable PNG 到 `public/icons/`。
+
+### 项目结构
 
 ```
 FinFlow/
-├── FinFlowApp.swift          # @main 入口，外观与全局配置
-├── Models/                   # SwiftData 模型
-│   ├── Transaction.swift
-│   ├── Category.swift
-│   ├── Account.swift
-│   ├── Budget.swift
-│   └── RecurringTransaction.swift
-├── Services/                 # 业务逻辑
-│   ├── SeedDataService.swift     # 首次启动预置分类与账户
-│   ├── SampleDataService.swift   # 测试数据生成
-│   ├── CSVService.swift          # CSV 导入导出
-│   ├── RecurringTransactionService.swift
-│   ├── TransactionFilter.swift
-│   └── TransactionFilterCriteria.swift
-├── Extensions/               # Color/Date/Decimal/Account 扩展
-└── Views/
-    ├── MainTabView.swift
-    ├── Home/                 # 首页仪表盘
-    ├── Statistics/           # 图表（DailyBarChart、CategoryAnalysisView）
-    ├── Transactions/         # 账单与表单
-    ├── Categories/           # 分类管理
-    ├── Accounts/             # 资产
-    ├── Budget/               # 预算
-    ├── Recurring/            # 周期账单
-    ├── Components/           # 通用组件
-    └── Settings/             # 设置
+├── ios/                     # SwiftUI 原生实现
+│   ├── FinFlow/
+│   ├── FinFlow.xcodeproj/
+│   └── FinFlowTests/
+├── src/                     # PWA React 实现
+│   ├── db/                  # Dexie 数据库、模型、种子数据
+│   ├── layouts/             # 主布局（底部 Tab）
+│   ├── pages/               # 首页/账单/资产/设置
+│   ├── styles/              # 全局样式与设计 token
+│   ├── App.tsx              # 路由
+│   └── main.tsx             # 入口
+├── public/                  # 静态资源（图标、manifest）
+├── scripts/                 # 工具脚本
+├── index.html
+├── vite.config.ts           # Vite + PWA 配置
+├── tsconfig.json
+└── package.json
 ```
 
-## 开发
+## iOS 端开发
 
 ```bash
-# 用 Xcode 打开
+cd ios
 open FinFlow.xcodeproj
 
 # 命令行构建
@@ -63,27 +94,24 @@ xcodebuild -project FinFlow.xcodeproj -scheme FinFlow build
 
 # 跑测试
 xcodebuild -project FinFlow.xcodeproj -scheme FinFlow test
-
-# 单个测试套件
-xcodebuild -project FinFlow.xcodeproj -scheme FinFlow \
-  -only-testing:FinFlowTests/SeedDataServiceTests test
 ```
 
-## 装到 iPhone
+详见 [`ios/CLAUDE.md`](./ios/CLAUDE.md)。
 
-1. 数据线连接 iPhone 到 Mac，Xcode 顶部设备选择器选 iPhone
-2. 项目设置 → Signing & Capabilities → Team 选你的 Apple ID（免费 Personal Team 即可），必要时改 Bundle ID 为唯一值
-3. `Cmd+R` 构建运行
-4. iPhone 设置 → 通用 → VPN与设备管理 → 信任开发者描述文件
+## 设计
 
-免费账号签名 7 天失效，需重新连接 Xcode 重新构建。长期使用建议付费 Apple Developer Program。
+两端共享设计 token：
 
-## 数据说明
+| Token | 深色 | 浅色 |
+|---|---|---|
+| 背景 | `#0F0F11` | `#F5F5F7` |
+| 卡片 | `#1A1A1E` | `#FFFFFF` |
+| 收入 | `#34D399` | `#34D399` |
+| 支出 | `#F59E0B` | `#F59E0B` |
+| 强调 | `#5B8DEF` | `#5B8DEF` |
+| 超支 | `#EF4444` | `#EF4444` |
 
-- 全部数据存在设备本地 SwiftData 沙盒，卸载即清除
-- 首次启动自动预置 74 个系统分类（支出 70 / 收入 4）与 4 个默认账户
-- 「设置 → 开发 → 填充测试数据」可生成最近 24 个月的随机交易用于演示
-- 「清空所有交易」后再「填充测试数据」可重置演示数据
+字体：SF Pro / PingFang SC，大数字用 `tabular-nums`。
 
 ## License
 

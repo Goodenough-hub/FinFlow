@@ -1,0 +1,116 @@
+:root {
+  --bg-primary: #0F0F11;
+  --bg-card: #1A1A1E;
+  --bg-card-elevated: #222228;
+  --card-border: #2C2C2E;
+  --income-green: #34D399;
+  --expense-gold: #F59E0B;
+  --accent-blue: #5B8DEF;
+  --transfer-blue: #5B8DEF;
+  --overspend-red: #EF4444;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8E8E93;
+  --text-tertiary: #636366;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-primary: #F5F5F7;
+    --bg-card: #FFFFFF;
+    --bg-card-elevated: #F5F5F7;
+    --card-border: #E5E5EA;
+    --text-primary: #000000;
+    --text-secondary: #3C3C43;
+    --text-tertiary: #8E8E93;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.page {
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--card-border);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row strong {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.placeholder {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.placeholder p {
+  margin-bottom: 8px;
+}
+
+.placeholder .hint {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+}

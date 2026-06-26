@@ -18,6 +18,22 @@ build/
 .swiftpm/
 Package.resolved
 
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+.eslintcache
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
+
+# PWA generated
+public/icons/*.png
+public/favicon.png
+!public/favicon.svg
+
 # macOS
 .DS_Store
 *.swp
