@@ -31,9 +31,9 @@ vite.config.d.ts
 vite.config.js
 
 # PWA generated
-public/icons/*.png
-public/favicon.png
-!public/favicon.svg
+web/public/icons/*.png
+web/public/favicon.png
+!web/public/favicon.svg
 
 # macOS
 .DS_Store

@@ -48,7 +48,7 @@ ios/
 
 ## 设计 token
 
-`FinFlow/Extensions/Color+Extensions.swift` 定义全部颜色 token，与 PWA 端 `src/styles/global.css` 的 CSS 变量一一对应。`UIColor(dynamicProvider:)` 实现深浅色自适应。
+`FinFlow/Extensions/Color+Extensions.swift` 定义全部颜色 token，与 PWA 端 `web/src/styles/global.css` 的 CSS 变量一一对应。`UIColor(dynamicProvider:)` 实现深浅色自适应。
 
 ## 测试约定
 
