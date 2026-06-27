@@ -50,10 +50,11 @@ function advanceDate(date: Date, rule: Rule): Date {
 
 export function computeNextDate(
   startDateStr: string,
-  rule: Rule
+  rule: Rule,
+  now: Date = new Date()
 ): string {
   const start = parseISODate(startDateStr)
-  const today = new Date()
+  const today = new Date(now)
   today.setHours(0, 0, 0, 0)
   let next = firstOccurrence(start, rule)
   while (next < today) {

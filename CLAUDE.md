@@ -41,6 +41,10 @@ npm run build
 # 类型检查
 npm run typecheck
 
+# 单元测试（Vitest）
+npm test            # 单次跑
+npm run test:watch  # 监听模式
+
 # 重新生成 PWA 图标（需要 Pillow）
 python3 scripts/generate_pwa_icons.py
 ```
@@ -76,7 +80,7 @@ xcodebuild -project FinFlow.xcodeproj -scheme FinFlow test
 
 每次新增/删除/重构功能必须同步更新对应端的单元测试：
 
-- PWA：暂未引入测试框架（待加 Vitest）
+- PWA：`web/src/**/*.test.ts`，使用 Vitest，运行 `cd web && npm test`
 - iOS：`ios/FinFlowTests/` 下按功能分文件，Swift Testing 框架
 
 ## 跨端一致性

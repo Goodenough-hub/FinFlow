@@ -52,11 +52,11 @@ const HEADER_ALIASES: Record<string, keyof ParsedRow> = {
 }
 
 export function parseCSV(text: string): ParseResult {
-  const lines = splitLines(text)
   const errors: string[] = []
-  if (lines.length === 0) {
+  if (!text.trim()) {
     return { rows: [], totalLines: 0, errors: ['空文件'] }
   }
+  const lines = splitLines(text)
 
   const headerCells = parseLine(lines[0])
   const columnIndex: Partial<Record<keyof ParsedRow, number>> = {}

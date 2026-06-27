@@ -44,6 +44,9 @@ npm run preview
 
 # 类型检查
 npm run typecheck
+
+# 单元测试（Vitest）
+npm test
 ```
 
 ### PWA 安装
