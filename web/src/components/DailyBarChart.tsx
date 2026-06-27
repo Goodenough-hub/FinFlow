@@ -5,6 +5,7 @@ import type { StatPeriod } from '../utils/date'
 import { daysInMonth, dayKey, monthKey } from '../utils/date'
 import { formatCompact } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
+import { useTheme } from '../hooks/useTheme'
 import './DailyBarChart.css'
 
 interface Props {
@@ -20,6 +21,7 @@ interface Bucket {
 }
 
 export default function DailyBarChart({ transactions, period, date }: Props) {
+  const { effective } = useTheme()
   const buckets = useMemo<Bucket[]>(() => {
     if (period === 'month') {
       const dim = daysInMonth(date)
@@ -126,7 +128,7 @@ export default function DailyBarChart({ transactions, period, date }: Props) {
         }
       ]
     }
-  }, [buckets, period, date, xValues, xLabel])
+  }, [buckets, period, date, xValues, xLabel, effective])
 
   const title = period === 'month' ? '月收支趋势' : '年收支趋势'
   const subtitle = `横：${xLabel}　纵：金额（¥）`

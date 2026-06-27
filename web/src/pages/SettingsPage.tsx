@@ -1,14 +1,11 @@
-import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
 import { db } from '../db/db'
 import type { Account, Category, Transaction } from '../db/models'
 import { usePWA } from '../hooks/usePWA'
+import { useTheme } from '../hooks/useTheme'
+import type { ThemeMode } from '../theme'
 import './SettingsPage.css'
-
-type ThemeMode = 'dark' | 'light' | 'auto'
-
-const THEME_KEY = 'finflow.web.theme'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
@@ -16,19 +13,10 @@ export default function SettingsPage() {
   const txCount = useLiveQuery(() => db.transactions.count(), [], 0)
   const catCount = useLiveQuery(() => db.categories.count(), [], 0)
   const accCount = useLiveQuery(() => db.accounts.count(), [], 0)
-
-  const [theme, setTheme] = useState<ThemeMode>(
-    (localStorage.getItem(THEME_KEY) as ThemeMode) || 'auto'
-  )
-
-  useEffect(() => {
-    applyTheme(theme)
-  }, [theme])
+  const { mode: theme, setThemeMode } = useTheme()
 
   const handleThemeChange = (mode: ThemeMode) => {
-    setTheme(mode)
-    localStorage.setItem(THEME_KEY, mode)
-    applyTheme(mode)
+    setThemeMode(mode)
   }
 
   const handleFillSample = async () => {
@@ -268,15 +256,6 @@ export default function SettingsPage() {
       </section>
     </div>
   )
-}
-
-function applyTheme(mode: ThemeMode) {
-  const root = document.documentElement
-  if (mode === 'auto') {
-    root.removeAttribute('data-theme')
-  } else {
-    root.setAttribute('data-theme', mode)
-  }
 }
 
 function download(filename: string, content: string, mime: string) {

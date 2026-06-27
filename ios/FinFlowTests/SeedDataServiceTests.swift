@@ -31,13 +31,13 @@ struct SeedDataServiceTests {
         let categories = try context.fetch(FetchDescriptor<Category>())
         let accounts = try context.fetch(FetchDescriptor<Account>())
 
-        #expect(categories.count == 74)
+        #expect(categories.count == 78)
         #expect(accounts.count == 4)
 
         let expenseCount = categories.filter { $0.type == .expense }.count
         let incomeCount = categories.filter { $0.type == .income }.count
         #expect(expenseCount == 70)
-        #expect(incomeCount == 4)
+        #expect(incomeCount == 8)
     }
 
     @Test func seedIfNeeded_seededCategoriesContainExpectedNames() throws {
@@ -173,6 +173,23 @@ struct SeedDataServiceTests {
         #expect(Set(housingSubs.map(\.name)) == ["租金", "水电", "物业", "其他"])
     }
 
+    @Test func seedIfNeeded_seedsInvestmentSubCategories() throws {
+        resetSeedState()
+        let container = try makeContainer()
+        let context = ModelContext(container)
+
+        SeedDataService.seedIfNeeded(context: context)
+
+        let categories = try context.fetch(FetchDescriptor<Category>())
+        let invest = categories.first { $0.name == "投资" && $0.parentID == nil }
+        #expect(invest != nil)
+
+        let subs = categories.filter { $0.parentID == invest?.id }
+        #expect(Set(subs.map(\.name)) == ["余额宝收益", "零钱通收益", "理财收益", "其他"])
+        #expect(subs.allSatisfy { $0.isSystem })
+        #expect(subs.allSatisfy { $0.type == .income })
+    }
+
     @Test func seedIfNeeded_seededAccountsContainFourTypes() throws {
         resetSeedState()
         let container = try makeContainer()
@@ -215,7 +232,7 @@ struct SeedDataServiceTests {
         let categories = try context.fetch(FetchDescriptor<Category>())
         let accounts = try context.fetch(FetchDescriptor<Account>())
 
-        #expect(categories.count == 74)
+        #expect(categories.count == 78)
         #expect(accounts.count == 4)
     }
 

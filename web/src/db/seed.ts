@@ -95,9 +95,14 @@ const expenseTree: SeedNode[] = [
   { name: '其他', icon: '⋯', color: '#6B7280', order: 7 }
 ]
 
-const incomeTree: SeedNode[] = [
+export const incomeTree: SeedNode[] = [
   { name: '工资', icon: '💰', color: '#10B981', order: 0 },
-  { name: '投资', icon: '📈', color: '#3B82F6', order: 1 },
+  { name: '投资', icon: '📈', color: '#3B82F6', order: 1, children: [
+    { name: '余额宝收益', icon: '💰', color: '#10B981', order: 100 },
+    { name: '零钱通收益', icon: '💵', color: '#10B981', order: 101 },
+    { name: '理财收益', icon: '📈', color: '#10B981', order: 102 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 103 }
+  ]},
   { name: '兼职', icon: '💼', color: '#8B5CF6', order: 2 },
   { name: '其他收入', icon: '⋯', color: '#6B7280', order: 3 }
 ]
@@ -110,6 +115,14 @@ const defaultAccounts: Array<{ type: AccountType; order: number }> = [
 ]
 
 const SEED_FLAG_KEY = 'finflow.web.seeded.v1'
+const INVESTMENT_CHILDREN_KEY = 'finflow.web.investment.children.v1'
+
+const investmentChildren: SeedNode[] = [
+  { name: '余额宝收益', icon: '💰', color: '#10B981', order: 100 },
+  { name: '零钱通收益', icon: '💵', color: '#10B981', order: 101 },
+  { name: '理财收益', icon: '📈', color: '#10B981', order: 102 },
+  { name: '其他', icon: '⋯', color: '#6B7280', order: 103 }
+]
 
 function insertTree(
   nodes: SeedNode[],
@@ -136,11 +149,15 @@ function insertTree(
 }
 
 export async function seedIfNeeded(): Promise<void> {
-  if (localStorage.getItem(SEED_FLAG_KEY)) return
+  if (localStorage.getItem(SEED_FLAG_KEY)) {
+    await migrateInvestmentChildren()
+    return
+  }
 
   const existingCats = await db.categories.count()
   if (existingCats > 0) {
     localStorage.setItem(SEED_FLAG_KEY, '1')
+    await migrateInvestmentChildren()
     return
   }
 
@@ -164,4 +181,34 @@ export async function seedIfNeeded(): Promise<void> {
   await db.accounts.bulkAdd(accounts)
 
   localStorage.setItem(SEED_FLAG_KEY, '1')
+  localStorage.setItem(INVESTMENT_CHILDREN_KEY, '1')
+}
+
+async function migrateInvestmentChildren(): Promise<void> {
+  if (localStorage.getItem(INVESTMENT_CHILDREN_KEY)) return
+
+  const invest = await db.categories.where('name').equals('投资').first()
+  if (!invest) {
+    localStorage.setItem(INVESTMENT_CHILDREN_KEY, '1')
+    return
+  }
+
+  const existing = await db.categories.where('parentId').equals(invest.id).first()
+  if (existing) {
+    localStorage.setItem(INVESTMENT_CHILDREN_KEY, '1')
+    return
+  }
+
+  const toAdd: Category[] = investmentChildren.map(node => ({
+    id: uid(),
+    name: node.name,
+    type: 'income',
+    icon: node.icon,
+    colorHex: node.color,
+    sortOrder: node.order,
+    isSystem: true,
+    parentId: invest.id
+  }))
+  await db.categories.bulkAdd(toAdd)
+  localStorage.setItem(INVESTMENT_CHILDREN_KEY, '1')
 }

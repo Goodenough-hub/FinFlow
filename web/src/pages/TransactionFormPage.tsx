@@ -5,6 +5,7 @@ import { db, uid } from '../db/db'
 import type { Account, Category, Transaction, TransactionType } from '../db/models'
 import { toISODate } from '../utils/date'
 import CategoryIcon from '../components/CategoryIcon'
+import AccountIcon from '../components/AccountIcon'
 import './TransactionFormPage.css'
 
 const VENDORS = ['高德', '滴滴', '美团', 'T3出行', '曹操出行', '其他']
@@ -323,7 +324,7 @@ export default function TransactionFormPage() {
                         onClick={() => setSelectedAccountId(acc.id)}
                         disabled={disabled}
                       >
-                        <CategoryIcon icon={acc.icon} color={acc.colorHex} size={36} />
+                        <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
                         <span className="account-name">{acc.name}</span>
                       </button>
                     )
@@ -348,7 +349,7 @@ export default function TransactionFormPage() {
                         onClick={() => setToAccountId(acc.id)}
                         disabled={disabled}
                       >
-                        <CategoryIcon icon={acc.icon} color={acc.colorHex} size={36} />
+                        <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
                         <span className="account-name">{acc.name}</span>
                       </button>
                     )
@@ -372,7 +373,7 @@ export default function TransactionFormPage() {
                       className={`account-cell ${selected ? 'selected' : ''}`}
                       onClick={() => setSelectedAccountId(acc.id)}
                     >
-                      <CategoryIcon icon={acc.icon} color={acc.colorHex} size={36} />
+                      <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
                       <span className="account-name">{acc.name}</span>
                     </button>
                   )

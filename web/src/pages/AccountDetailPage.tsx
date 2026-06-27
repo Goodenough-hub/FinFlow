@@ -6,7 +6,7 @@ import type { Account, Transaction } from '../db/models'
 import { accountTypeLabel } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate } from '../utils/date'
-import CategoryIcon from '../components/CategoryIcon'
+import AccountIcon from '../components/AccountIcon'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
 import './AccountDetailPage.css'
@@ -90,6 +90,16 @@ export default function AccountDetailPage() {
     setFilterMonth(new Date(filterMonth.getFullYear(), filterMonth.getMonth() + delta, 1))
   }
 
+  const handleDelete = async () => {
+    const txCount = accountTransactions.length
+    const msg = txCount > 0
+      ? `删除此账户？该账户下有 ${txCount} 笔交易，删除后这些交易将保留但失去账户关联。`
+      : '删除此账户？'
+    if (!confirm(msg)) return
+    await db.accounts.delete(account.id)
+    navigate('/accounts')
+  }
+
   return (
     <div className="page account-detail-page">
       <header className="form-header">
@@ -100,7 +110,7 @@ export default function AccountDetailPage() {
 
       <div className="card balance-card">
         <div className="balance-top">
-          <CategoryIcon icon={account.icon} color={account.colorHex} size={48} />
+          <AccountIcon type={account.type} icon={account.icon} colorHex={account.colorHex} size={48} />
           <div className="balance-meta">
             <div className="balance-type">{accountTypeLabel[account.type]}</div>
             <div className={`balance-amount ${balance < 0 ? 'negative' : ''}`}>
@@ -173,6 +183,12 @@ export default function AccountDetailPage() {
       )}
       {recharging && (
         <RechargeDialog account={account} onClose={() => setRecharging(false)} />
+      )}
+
+      {!account.isSystem && (
+        <button className="danger-zone-btn" onClick={handleDelete}>
+          删除此账户
+        </button>
       )}
     </div>
   )

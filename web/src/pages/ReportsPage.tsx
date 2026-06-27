@@ -7,6 +7,7 @@ import type { Account, Category, Transaction } from '../db/models'
 import { asCurrency, formatCompact } from '../utils/format'
 import { yearString, monthYearString } from '../utils/date'
 import { chartColors } from '../utils/chartTheme'
+import { useTheme } from '../hooks/useTheme'
 import './ReportsPage.css'
 
 type ViewMode = 'year' | 'month'
@@ -21,6 +22,7 @@ export default function ReportsPage() {
   const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
   const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
   const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { effective } = useTheme()
 
   const refDate = useMemo(() => new Date(year, month, 1), [year, month])
 
@@ -143,7 +145,7 @@ export default function ReportsPage() {
         }
       ]
     }
-  }, [allTransactions, year])
+  }, [allTransactions, year, effective])
 
   const topCategories = useMemo(() => {
     const map = new Map<string, number>()
@@ -262,7 +264,7 @@ export default function ReportsPage() {
         }
       ]
     }
-  }, [allTransactions, year, month])
+  }, [allTransactions, year, month, effective])
 
   const accountTrendOption = useMemo(() => {
     const c = chartColors()
@@ -352,7 +354,7 @@ export default function ReportsPage() {
       },
       series
     }
-  }, [allTransactions, allAccounts, year])
+  }, [allTransactions, allAccounts, year, effective])
 
   const weekdayData = useMemo(() => {
     const data = new Array(7).fill(0)
@@ -404,7 +406,7 @@ export default function ReportsPage() {
         animationDelay: (i: number) => i * 50
       }]
     }
-  }, [weekdayData])
+  }, [weekdayData, effective])
 
   const accountDistribution = useMemo(() => {
     const map = new Map<string, number>()

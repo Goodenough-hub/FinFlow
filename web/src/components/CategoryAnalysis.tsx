@@ -13,6 +13,7 @@ import {
 } from '../utils/category'
 import { asCurrency, formatPercent } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
+import { useTheme } from '../hooks/useTheme'
 import CategoryIcon from './CategoryIcon'
 import './CategoryAnalysis.css'
 
@@ -44,6 +45,7 @@ interface RowItem {
 
 export default function CategoryAnalysis({ transactions, type }: Props) {
   const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
+  useTheme()
   const [drillPath, setDrillPath] = useState<Category[]>([])
 
   const currentParent = drillPath[drillPath.length - 1]

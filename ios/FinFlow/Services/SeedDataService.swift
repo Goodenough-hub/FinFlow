@@ -112,7 +112,12 @@ enum SeedDataService {
 
     private static let incomeTree: [SeedNode] = [
         SeedNode("工资", "dollarsign.circle.fill", "#10B981", 0),
-        SeedNode("投资", "chart.line.uptrend.xyaxis", "#3B82F6", 1),
+        SeedNode("投资", "chart.line.uptrend.xyaxis", "#3B82F6", 1, [
+            SeedNode("余额宝收益", "dollarsign.circle.fill", "#10B981", 100),
+            SeedNode("零钱通收益", "yensign.circle.fill", "#10B981", 101),
+            SeedNode("理财收益", "percent", "#10B981", 102),
+            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 103),
+        ]),
         SeedNode("兼职", "briefcase.fill", "#8B5CF6", 2),
         SeedNode("其他收入", "ellipsis.circle.fill", "#6B7280", 3),
     ]

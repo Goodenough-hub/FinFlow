@@ -181,3 +181,21 @@
 .flow-row:active {
   opacity: 0.6;
 }
+
+.danger-zone-btn {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  margin: 20px auto 0;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--overspend-red);
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+}
+
+.danger-zone-btn:active {
+  opacity: 0.6;
+}

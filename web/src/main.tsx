@@ -4,12 +4,8 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { seedIfNeeded } from './db/seed'
 import { processRecurring } from './services/recurring'
+import './theme'
 import './styles/global.css'
-
-const savedTheme = localStorage.getItem('finflow.web.theme')
-if (savedTheme && savedTheme !== 'auto') {
-  document.documentElement.setAttribute('data-theme', savedTheme)
-}
 
 seedIfNeeded().then(() => {
   processRecurring().catch(err => console.error('Failed to process recurring:', err))
