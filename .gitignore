@@ -42,3 +42,7 @@ web/public/favicon.png
 
 # CocoaPods (if used in future)
 Pods/
+
+# Claude Code 项目指令（本地约定，不入库）
+CLAUDE.md
+ios/CLAUDE.md
