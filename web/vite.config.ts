@@ -93,7 +93,13 @@ export default defineConfig({
   ],
   server: {
     port: 5075,
-    open: true
+    open: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      }
+    }
   },
   build: {
     target: 'es2020',
