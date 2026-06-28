@@ -142,7 +142,7 @@ export default function SettingsPage() {
   return (
     <div className="page settings-page">
       <header className="page-header">
-        <h1>设置</h1>
+        <h1>我的</h1>
       </header>
 
       <section className="profile-card" onClick={() => navigate('/accounts')}>

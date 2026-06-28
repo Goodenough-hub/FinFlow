@@ -5,7 +5,7 @@ const tabs = [
   { to: '/', label: '首页', icon: '🏠' },
   { to: '/transactions', label: '账单', icon: '📋' },
   { to: '/accounts', label: '资产', icon: '💳' },
-  { to: '/settings', label: '设置', icon: '⚙️' }
+  { to: '/settings', label: '我的', icon: '⚙️' }
 ]
 
 const FAB_ROUTES = ['/', '/transactions']
