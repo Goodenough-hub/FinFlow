@@ -12,6 +12,7 @@ export interface AuthInfo {
   role: string
   appScope: string[]
   username: string
+  avatar: string
 }
 
 export async function login(req: LoginRequest): Promise<AuthInfo> {
@@ -21,5 +22,10 @@ export async function login(req: LoginRequest): Promise<AuthInfo> {
 
 export async function refresh(): Promise<AuthInfo> {
   const { data } = await apiClient.post<AuthInfo>('/auth/refresh')
+  return data
+}
+
+export async function updateAvatar(avatar: string): Promise<{ avatar: string }> {
+  const { data } = await apiClient.put<{ avatar: string }>('/auth/avatar', { avatar })
   return data
 }

@@ -9,17 +9,19 @@ import { useQuery } from '../hooks/useQuery'
 import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
 import { asCurrency } from '../utils/format'
+import AvatarPicker from '../components/AvatarPicker'
 import './SettingsPage.css'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, logout, setAvatar } = useAuth()
   const { canInstall, installed, offline, install } = usePWA()
   const { data: txs = [] } = useQuery(() => transactionsApi.list(), [])
   const { list: cats = [] } = useCategories()
   const { list: accs = [] } = useAccounts()
   const { mode: theme, setThemeMode } = useTheme()
   const [busy, setBusy] = useState(false)
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
 
   const balances = useMemo(() => {
     const map = new Map<string, number>()
@@ -146,10 +148,14 @@ export default function SettingsPage() {
       </header>
 
       <section className="profile-card" onClick={() => navigate('/accounts')}>
-        <div className="profile-avatar" style={{
-          background: `linear-gradient(135deg, ${avatarColor(user?.username ?? '')}, ${avatarColor(user?.username ?? '', true)})`
-        }}>
-          {avatarLetter}
+        <div
+          className="profile-avatar"
+          style={avatarStyle(user?.avatar ?? '', user?.username ?? '')}
+          onClick={e => { e.stopPropagation(); setAvatarPickerOpen(true) }}
+          role="button"
+          aria-label="更换头像"
+        >
+          {(user?.avatar ?? '').startsWith('data:') ? '' : avatarLetter}
         </div>
         <div className="profile-info">
           <div className="profile-name">{user?.username ?? '未登录'}</div>
@@ -161,6 +167,15 @@ export default function SettingsPage() {
         </div>
         <span className="profile-chevron">›</span>
       </section>
+
+      {avatarPickerOpen && user && (
+        <AvatarPicker
+          username={user.username}
+          currentAvatar={user.avatar ?? ''}
+          onClose={() => setAvatarPickerOpen(false)}
+          onSaved={avatar => setAvatar(avatar)}
+        />
+      )}
 
       <section className="settings-group">
         <div className="group-title">账户</div>
@@ -356,20 +371,39 @@ export default function SettingsPage() {
   )
 }
 
-function avatarColor(seed: string, alt = false): string {
-  const colors = [
-    ['#007AFF', '#00C6FF'],
-    ['#5856D6', '#AF52DE'],
-    ['#34C759', '#30D158'],
-    ['#FF9500', '#FF6B00'],
-    ['#FF3B30', '#FF2D55'],
-    ['#AF52DE', '#FF375F'],
-    ['#5AC8FA', '#007AFF']
-  ]
-  let h = 0
-  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  const pair = colors[h % colors.length]
-  return alt ? pair[1] : pair[0]
+const PRESET_GRADIENTS: Array<[string, string]> = [
+  ['#007AFF', '#00C6FF'],
+  ['#5856D6', '#AF52DE'],
+  ['#34C759', '#30D158'],
+  ['#FF9500', '#FF6B00'],
+  ['#FF3B30', '#FF2D55'],
+  ['#AF52DE', '#FF375F'],
+  ['#5AC8FA', '#007AFF'],
+  ['#FFD60A', '#FF9500'],
+  ['#64D2FF', '#5E5CE6'],
+  ['#FF6482', '#FF3B30'],
+  ['#30D158', '#28CD41'],
+  ['#BF5AF2', '#7C4DFF']
+]
+
+function avatarStyle(avatar: string, username: string): React.CSSProperties {
+  if (avatar.startsWith('data:')) {
+    return {
+      backgroundImage: `url(${avatar})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }
+  }
+  let idx = 0
+  if (avatar.startsWith('preset:')) {
+    idx = parseInt(avatar.slice(7), 10) || 0
+  } else {
+    let h = 0
+    for (const c of username) h = (h * 31 + c.charCodeAt(0)) >>> 0
+    idx = h % PRESET_GRADIENTS.length
+  }
+  const [from, to] = PRESET_GRADIENTS[idx % PRESET_GRADIENTS.length]
+  return { background: `linear-gradient(135deg, ${from}, ${to})` }
 }
 
 function stripId<T extends Record<string, any>>(obj: T): Omit<T, 'id'> {
