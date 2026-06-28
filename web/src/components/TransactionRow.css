@@ -1,67 +1,98 @@
 .tx-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
+  gap: 16px;
+  padding: 12px 12px;
+  margin: 0 -12px;
   position: relative;
+  border-radius: 16px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.tx-row:hover {
+  background: var(--bg-card-elevated);
+  transform: translateX(4px);
+}
+
+.tx-row:active {
+  transform: scale(0.98);
+  background: var(--card-border);
 }
 
 .tx-row:not(:last-child)::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 48px;
-  right: 0;
-  height: 0.5px;
+  left: 64px;
+  right: 12px;
+  height: 1px;
   background: var(--divider);
+  transition: opacity 0.2s ease;
+}
+
+/* Hide divider when hovered because row background appears */
+.tx-row:hover::after,
+.tx-row:active::after {
+  opacity: 0;
 }
 
 .tx-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .tx-title {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 2px;
+  letter-spacing: -0.01em;
 }
 
 .tx-subtitle {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 .tx-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
+  justify-content: center;
 }
 
 .tx-amount {
-  font-size: 14px;
-  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   white-space: nowrap;
+  letter-spacing: -0.02em;
 }
 
 .tx-time {
-  font-size: 10px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
+  font-weight: 500;
 }
 
 .tx-row.skeleton {
-  height: 56px;
+  height: 64px;
 }

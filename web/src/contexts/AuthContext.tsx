@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { login as apiLogin, refresh as apiRefresh, type AuthInfo } from '../api/auth'
 import { tokenStorage } from '../api/client'
+import { refreshAllLookups } from '../hooks/useLookup'
 
 interface AuthContextValue {
   user: AuthInfo | null
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(info => {
         tokenStorage.set(info.token)
         setUser(info)
+        refreshAllLookups()
       })
       .catch(() => {
         tokenStorage.clear()
@@ -38,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const info = await apiLogin({ username, password })
     tokenStorage.set(info.token)
     setUser(info)
+    refreshAllLookups()
   }
 
   const logout = () => {

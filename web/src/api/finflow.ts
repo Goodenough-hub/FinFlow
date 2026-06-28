@@ -90,7 +90,9 @@ export const accountsApi = {
   update: (id: string, a: Partial<Account>) =>
     apiClient.put<Account>(`/finflow/accounts/${id}`, a).then(r => r.data),
   remove: (id: string) =>
-    apiClient.delete(`/finflow/accounts/${id}`).then(r => r.data)
+    apiClient.delete(`/finflow/accounts/${id}`).then(r => r.data),
+  clear: () =>
+    apiClient.delete('/finflow/accounts').then(r => r.data)
 }
 
 export const budgetsApi = {

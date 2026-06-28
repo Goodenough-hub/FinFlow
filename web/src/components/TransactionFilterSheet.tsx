@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { TransactionType } from '../db/models'
 import { useCategories, useAccounts } from '../hooks/useLookup'
+import { getLeafAccounts } from '../utils/account'
 import CategoryIcon from './CategoryIcon'
 import './TransactionFilterSheet.css'
 
@@ -66,7 +67,7 @@ export default function TransactionFilterSheet({ criteria, onApply, onClose }: P
   }, [criteria])
 
   const sortedCategories = allCategories.slice().sort((a, b) => a.sortOrder - b.sortOrder)
-  const sortedAccounts = allAccounts.slice().sort((a, b) => a.sortOrder - b.sortOrder)
+  const sortedAccounts = getLeafAccounts(allAccounts).sort((a, b) => a.sortOrder - b.sortOrder)
 
   const toggleId = (id: string, list: string[]): string[] =>
     list.includes(id) ? list.filter(x => x !== id) : [...list, id]

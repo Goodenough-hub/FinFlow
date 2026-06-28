@@ -47,7 +47,11 @@ export function toISODate(d: Date): string {
 }
 
 export function parseISODate(s: string): Date {
-  const [y, m, d] = s.split('-').map(Number)
+  const datePart = (s || '').split('T')[0]
+  const [y, m, d] = datePart.split('-').map(Number)
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
+    return new Date(NaN)
+  }
   return new Date(y, m - 1, d)
 }
 

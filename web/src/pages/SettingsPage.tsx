@@ -8,6 +8,7 @@ import type { ThemeMode } from '../theme'
 import { useQuery } from '../hooks/useQuery'
 import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
+import { getLeafAccounts } from '../utils/account'
 import { asCurrency } from '../utils/format'
 import AvatarPicker from '../components/AvatarPicker'
 import './SettingsPage.css'
@@ -62,11 +63,15 @@ export default function SettingsPage() {
       alert('已存在交易数据，无法填充示例。请先清空所有交易。')
       return
     }
-    if (!confirm('填充最近 24 个月示例交易数据？')) return
+    if (!confirm('填充最近 2 年（24 个月）示例交易数据？')) return
     setBusy(true)
     try {
-      await fillSampleData(cats, accs)
-      alert('示例数据已填充')
+      const ok = await fillSampleData(cats, accs)
+      if (!ok) {
+        alert('填充失败：需要至少 1 个分类和 1 个非定期账户。')
+      } else {
+        alert('示例数据已填充')
+      }
     } catch (e) {
       alert(`填充失败：${(e as Error).message}`)
     } finally {
@@ -81,6 +86,25 @@ export default function SettingsPage() {
     try {
       await Promise.all(txs.map(t => transactionsApi.remove(t.id)))
       alert('已清空交易数据')
+    } catch (e) {
+      alert(`清空失败：${(e as Error).message}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleClearAccounts = async () => {
+    if (accs.length === 0) {
+      alert('没有可清空的账户')
+      return
+    }
+    if (!confirm(`清空所有账户？将删除全部 ${accs.length} 个账户及其关联交易，此操作不可恢复！`)) return
+    if (!confirm('再次确认：账户、关联交易、周期性交易都会被删除，分类和预算保留。')) return
+    setBusy(true)
+    try {
+      await accountsApi.clear()
+      await refreshAllLookups()
+      alert('已清空账户及关联交易')
     } catch (e) {
       alert(`清空失败：${(e as Error).message}`)
     } finally {
@@ -185,7 +209,15 @@ export default function SettingsPage() {
               暂无账户
             </div>
           )}
-          {accs.map(a => (
+          {accs
+            .filter(a => !a.parentId)
+            .sort((a, b) => {
+              const aFixed = a.type === 'fixed' ? 1 : 0
+              const bFixed = b.type === 'fixed' ? 1 : 0
+              if (aFixed !== bFixed) return aFixed - bFixed
+              return a.sortOrder - b.sortOrder
+            })
+            .map(a => (
             <button
               key={a.id}
               className="action-row"
@@ -310,12 +342,17 @@ export default function SettingsPage() {
         <div className="card group-card">
           <button className="action-row" disabled={busy} onClick={handleFillSample}>
             <span className="action-icon">✨</span>
-            <span className="action-label">{busy ? '处理中…' : '填充 30 天示例数据'}</span>
+            <span className="action-label">{busy ? '处理中…' : '填充 2 年示例数据'}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row danger" disabled={busy} onClick={handleClearAll}>
             <span className="action-icon">🗑</span>
             <span className="action-label">{busy ? '处理中…' : '清空所有交易'}</span>
+            <span className="action-chevron">›</span>
+          </button>
+          <button className="action-row danger" disabled={busy} onClick={handleClearAccounts}>
+            <span className="action-icon">🗑</span>
+            <span className="action-label">{busy ? '处理中…' : '清空所有账户（含关联交易）'}</span>
             <span className="action-chevron">›</span>
           </button>
         </div>
@@ -457,16 +494,16 @@ function csvEscape(s: string): string {
   return s
 }
 
-async function fillSampleData(cats: Category[], accs: Account[]) {
+async function fillSampleData(cats: Category[], accs: Account[]): Promise<boolean> {
   const expenseCats = cats.filter(c => c.type === 'expense')
   const leafCats = expenseCats.filter(c => !cats.some(x => x.parentId === c.id))
   const fallbackExpense = expenseCats
   const incomeCats = cats
     .filter(c => c.type === 'income')
     .filter(c => !cats.some(x => x.parentId === c.id))
-  const liquidAccounts = accs.filter(a => a.type !== 'fixed')
+  const liquidAccounts = getLeafAccounts(accs).filter(a => a.type !== 'fixed')
 
-  if (leafCats.length === 0 || liquidAccounts.length === 0) return
+  if (leafCats.length === 0 || liquidAccounts.length === 0) return false
 
   const now = new Date()
   const vendors = ['高德', '滴滴', '美团', 'T3出行', '曹操出行']
@@ -541,6 +578,7 @@ async function fillSampleData(cats: Category[], accs: Account[]) {
   for (const t of batch) {
     await transactionsApi.create(t)
   }
+  return true
 }
 
 function pickAmount(catName: string): number {

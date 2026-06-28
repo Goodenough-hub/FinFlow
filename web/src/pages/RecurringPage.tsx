@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Account, Category, RecurringTransaction, TransactionType } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate, parseISODate } from '../utils/date'
+import { getLeafAccounts } from '../utils/account'
 import { computeNextDate } from '../services/recurring'
 import { useQuery } from '../hooks/useQuery'
 import { useCategories, useAccounts } from '../hooks/useLookup'
@@ -209,7 +210,7 @@ function RecurringDialog({ state, onClose, onSaved }: DialogProps) {
   )
 
   const availableAccounts = useMemo(
-    () => allAccounts.filter(a => a.type !== 'fixed'),
+    () => getLeafAccounts(allAccounts).filter(a => a.type !== 'fixed'),
     [allAccounts]
   )
 

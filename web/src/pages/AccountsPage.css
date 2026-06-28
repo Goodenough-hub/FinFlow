@@ -26,6 +26,11 @@
   background: var(--accent-tint-border);
 }
 
+.header-action.active {
+  color: var(--overspend-red);
+  background: rgba(239, 68, 68, 0.12);
+}
+
 .assets-summary {
   background: var(--gradient-card);
   padding: 20px;
@@ -168,6 +173,111 @@
 
 .account-row:active {
   opacity: 0.6;
+}
+
+.account-row.dragging {
+  opacity: 0.35;
+}
+
+.account-row.drag-over {
+  background: var(--accent-tint);
+  box-shadow: inset 0 2px 0 var(--accent-blue);
+}
+
+.account-row[draggable="true"] {
+  cursor: grab;
+}
+
+.account-row[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.account-row.edit-mode {
+  gap: 8px;
+}
+
+.account-row.has-children {
+  cursor: pointer;
+}
+
+.account-expand {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted, var(--text-secondary));
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.account-expand:active {
+  transform: scale(0.92);
+}
+
+.account-children {
+  padding-left: 44px;
+  background: var(--bg-elevated, rgba(255,255,255,0.02));
+}
+
+.account-row.child {
+  padding: 10px 0;
+}
+
+.account-row.child .account-name {
+  font-size: 14px;
+}
+
+.account-row-delete {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--overspend-red);
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+  animation: account-delete-in 0.18s ease-out;
+}
+
+.account-row-add {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(91, 141, 239, 0.35);
+  animation: account-delete-in 0.18s ease-out;
+}
+
+.account-row-placeholder {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+@keyframes account-delete-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .account-info {
@@ -406,6 +516,68 @@
   color: var(--text-secondary);
   text-align: center;
   line-height: 1.2;
+}
+
+.child-balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--bg-card-elevated);
+  border-radius: 10px;
+  border: 0.5px solid var(--card-border);
+}
+
+.child-balance-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.child-balance-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 0.5px solid;
+  flex-shrink: 0;
+}
+
+.child-balance-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.child-balance-input-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 110px;
+}
+
+.child-balance-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  text-align: right;
 }
 
 .subtype-row {

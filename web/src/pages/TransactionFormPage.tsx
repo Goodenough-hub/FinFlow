@@ -27,7 +27,10 @@ export default function TransactionFormPage() {
   const [amountText, setAmountText] = useState('')
   const [note, setNote] = useState('')
   const [date, setDate] = useState(toISODate(new Date()))
-  const [time, setTime] = useState<string>('12:00')
+  const [time, setTime] = useState<string>(() => {
+    const d = new Date()
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  })
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>()
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>()
   const [toAccountId, setToAccountId] = useState<string | undefined>()
@@ -40,7 +43,10 @@ export default function TransactionFormPage() {
     setAmountText(String(existing.amount))
     setNote(existing.note)
     setDate(existing.date)
-    setTime(existing.time ?? '12:00')
+    setTime(existing.time ?? (() => {
+      const d = new Date()
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+    })())
     setSelectedCategoryId(existing.categoryId)
     setSelectedAccountId(existing.accountId)
     setToAccountId(existing.toAccountId)
@@ -49,12 +55,41 @@ export default function TransactionFormPage() {
 
   useEffect(() => {
     if (!isEdit && !selectedAccountId && allAccounts.length) {
-      const first = allAccounts.find(a => a.type !== 'fixed') ?? allAccounts[0]
-      setSelectedAccountId(first.id)
+      const roots = allAccounts.filter(a => !a.parentId).sort((a, b) => a.sortOrder - b.sortOrder)
+      for (const root of roots) {
+        const children = allAccounts.filter(a => a.parentId === root.id).sort((a, b) => a.sortOrder - b.sortOrder)
+        const items = children.length > 0 ? children : [root]
+        const first = items.find(a => a.type !== 'fixed') ?? items[0]
+        if (first) {
+          setSelectedAccountId(first.id)
+          return
+        }
+      }
     }
   }, [allAccounts, isEdit, selectedAccountId])
 
-  const availableAccounts = useMemo(() => allAccounts.filter(a => a.type !== 'fixed'), [allAccounts])
+  // 按资产页层级分组：容器型根账户作为组标题（可点选），子账户在下方网格；叶子根账户单独成组
+  const accountGroups = useMemo(() => {
+    const roots = allAccounts.filter(a => !a.parentId).sort((a, b) => a.sortOrder - b.sortOrder)
+    return roots.map(root => {
+      const children = allAccounts.filter(a => a.parentId === root.id).sort((a, b) => a.sortOrder - b.sortOrder)
+      if (children.length > 0) {
+        return { parent: root, items: children }
+      }
+      return { parent: null, items: [root] }
+    })
+  }, [allAccounts])
+
+  // 转账场景：含 fixed
+  const transferGroups = accountGroups
+  // 收支场景：过滤 fixed（父账户或子账户为 fixed 都排除）
+  const availableGroups = useMemo(
+    () => accountGroups
+      .filter(g => !(g.parent && g.parent.type === 'fixed'))
+      .map(g => ({ ...g, items: g.items.filter(a => a.type !== 'fixed') }))
+      .filter(g => g.items.length > 0),
+    [accountGroups]
+  )
   const isTransfer = type === 'transfer'
 
   const parentIds = useMemo(() => new Set(allCategories.map(c => c.parentId).filter(Boolean) as string[]), [allCategories])
@@ -97,7 +132,8 @@ export default function TransactionFormPage() {
     setExpandedIds(new Set())
     if (t === 'transfer') {
       setVendor('')
-      const first = allAccounts.find(a => a.id !== selectedAccountId) ?? allAccounts[0]
+      const allLeaves = transferGroups.flatMap(g => g.items)
+      const first = allLeaves.find(a => a.id !== selectedAccountId) ?? allLeaves[0]
       setToAccountId(first?.id)
     } else {
       setToAccountId(undefined)
@@ -277,7 +313,14 @@ export default function TransactionFormPage() {
               type="time"
               className="form-input"
               value={time}
-              onChange={e => setTime(e.target.value || '12:00')}
+              onChange={e => {
+                if (!e.target.value) {
+                  const d = new Date()
+                  setTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`)
+                } else {
+                  setTime(e.target.value)
+                }
+              }}
             />
           </div>
         </section>
@@ -286,75 +329,119 @@ export default function TransactionFormPage() {
           <>
             <section className="form-section">
               <div className="section-label">转出账户</div>
-              {allAccounts.length === 0 ? (
+              {transferGroups.length === 0 ? (
                 <div className="form-empty">暂无账户，请先在资产页创建</div>
               ) : (
-                <div className="account-grid">
-                  {allAccounts.map(acc => {
-                    const selected = selectedAccountId === acc.id
-                    const disabled = acc.id === toAccountId
-                    return (
+                transferGroups.map(group => (
+                  <div key={group.parent?.id ?? group.items[0].id} className="account-group">
+                    {group.parent && (
                       <button
-                        key={acc.id}
-                        className={`account-cell ${selected ? 'selected' : ''} ${disabled ? 'dim' : ''}`}
-                        onClick={() => setSelectedAccountId(acc.id)}
-                        disabled={disabled}
+                        className={`account-parent-row ${selectedAccountId === group.parent.id ? 'selected' : ''} ${toAccountId === group.parent.id ? 'dim' : ''}`}
+                        onClick={() => setSelectedAccountId(group.parent!.id)}
+                        disabled={toAccountId === group.parent.id}
                       >
-                        <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
-                        <span className="account-name">{acc.name}</span>
+                        <AccountIcon type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
+                        <span className="account-parent-name">{group.parent.name}</span>
+                        <span className="account-parent-hint">主账户</span>
                       </button>
-                    )
-                  })}
-                </div>
+                    )}
+                    <div className="account-grid">
+                      {group.items.map(acc => {
+                        const selected = selectedAccountId === acc.id
+                        const disabled = acc.id === toAccountId
+                        return (
+                          <button
+                            key={acc.id}
+                            className={`account-cell ${selected ? 'selected' : ''} ${disabled ? 'dim' : ''}`}
+                            onClick={() => setSelectedAccountId(acc.id)}
+                            disabled={disabled}
+                          >
+                            <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
+                            <span className="account-name">{acc.name}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))
               )}
             </section>
 
             <section className="form-section">
               <div className="section-label">转入账户</div>
-              {allAccounts.length === 0 ? (
+              {transferGroups.length === 0 ? (
                 <div className="form-empty">暂无账户</div>
               ) : (
-                <div className="account-grid">
-                  {allAccounts.map(acc => {
-                    const selected = toAccountId === acc.id
-                    const disabled = acc.id === selectedAccountId
-                    return (
+                transferGroups.map(group => (
+                  <div key={group.parent?.id ?? group.items[0].id} className="account-group">
+                    {group.parent && (
                       <button
-                        key={acc.id}
-                        className={`account-cell ${selected ? 'selected' : ''} ${disabled ? 'dim' : ''}`}
-                        onClick={() => setToAccountId(acc.id)}
-                        disabled={disabled}
+                        className={`account-parent-row ${toAccountId === group.parent.id ? 'selected' : ''} ${selectedAccountId === group.parent.id ? 'dim' : ''}`}
+                        onClick={() => setToAccountId(group.parent!.id)}
+                        disabled={selectedAccountId === group.parent.id}
                       >
-                        <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
-                        <span className="account-name">{acc.name}</span>
+                        <AccountIcon type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
+                        <span className="account-parent-name">{group.parent.name}</span>
+                        <span className="account-parent-hint">主账户</span>
                       </button>
-                    )
-                  })}
-                </div>
+                    )}
+                    <div className="account-grid">
+                      {group.items.map(acc => {
+                        const selected = toAccountId === acc.id
+                        const disabled = acc.id === selectedAccountId
+                        return (
+                          <button
+                            key={acc.id}
+                            className={`account-cell ${selected ? 'selected' : ''} ${disabled ? 'dim' : ''}`}
+                            onClick={() => setToAccountId(acc.id)}
+                            disabled={disabled}
+                          >
+                            <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
+                            <span className="account-name">{acc.name}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))
               )}
             </section>
           </>
         ) : (
           <section className="form-section">
             <div className="section-label">账户</div>
-            {availableAccounts.length === 0 ? (
+            {availableGroups.length === 0 ? (
               <div className="form-empty">暂无账户，请先在资产页创建</div>
             ) : (
-              <div className="account-grid">
-                {availableAccounts.map(acc => {
-                  const selected = selectedAccountId === acc.id
-                  return (
+              availableGroups.map(group => (
+                <div key={group.parent?.id ?? group.items[0].id} className="account-group">
+                  {group.parent && (
                     <button
-                      key={acc.id}
-                      className={`account-cell ${selected ? 'selected' : ''}`}
-                      onClick={() => setSelectedAccountId(acc.id)}
+                      className={`account-parent-row ${selectedAccountId === group.parent.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedAccountId(group.parent!.id)}
                     >
-                      <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
-                      <span className="account-name">{acc.name}</span>
+                      <AccountIcon type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
+                      <span className="account-parent-name">{group.parent.name}</span>
+                      <span className="account-parent-hint">主账户</span>
                     </button>
-                  )
-                })}
-              </div>
+                  )}
+                  <div className="account-grid">
+                    {group.items.map(acc => {
+                      const selected = selectedAccountId === acc.id
+                      return (
+                        <button
+                          key={acc.id}
+                          className={`account-cell ${selected ? 'selected' : ''}`}
+                          onClick={() => setSelectedAccountId(acc.id)}
+                        >
+                          <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
+                          <span className="account-name">{acc.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))
             )}
           </section>
         )}

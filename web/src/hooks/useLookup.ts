@@ -25,7 +25,10 @@ async function loadCategories() {
   if (categoriesPromise) return categoriesPromise
   categoriesPromise = (async () => {
     try {
-      const list = await categoriesApi.list()
+      const list = (await categoriesApi.list()).map(c => ({
+        ...c,
+        parentId: c.parentId ?? undefined,
+      }))
       const byId = new Map<string, Category>()
       for (const c of list) byId.set(c.id, c)
       categoriesCache = { byId, list, loading: false }
@@ -43,7 +46,12 @@ async function loadAccounts() {
   if (accountsPromise) return accountsPromise
   accountsPromise = (async () => {
     try {
-      const list = await accountsApi.list()
+      const rawList = await accountsApi.list()
+      const list: Account[] = rawList.map(a => ({
+        ...a,
+        initialBalance: Number(a.initialBalance),
+        parentId: a.parentId ?? undefined,
+      }))
       const byId = new Map<string, Account>()
       for (const a of list) byId.set(a.id, a)
       accountsCache = { byId, list, loading: false }
@@ -60,7 +68,10 @@ async function loadAccounts() {
 export function useCategories(): LookupState<Category> {
   const [, force] = useState(0)
   useEffect(() => {
-    if (categoriesCache.loading) loadCategories()
+    // 初次加载 or 失败后空列表自动重试
+    if ((categoriesCache.loading || categoriesCache.list.length === 0) && !categoriesPromise) {
+      loadCategories()
+    }
     const fn = () => force(x => x + 1)
     categoryListeners.add(fn)
     return () => { categoryListeners.delete(fn) }
@@ -71,7 +82,9 @@ export function useCategories(): LookupState<Category> {
 export function useAccounts(): LookupState<Account> {
   const [, force] = useState(0)
   useEffect(() => {
-    if (accountsCache.loading) loadAccounts()
+    if ((accountsCache.loading || accountsCache.list.length === 0) && !accountsPromise) {
+      loadAccounts()
+    }
     const fn = () => force(x => x + 1)
     accountListeners.add(fn)
     return () => { accountListeners.delete(fn) }

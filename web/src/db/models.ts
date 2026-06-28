@@ -38,6 +38,7 @@ export interface Account {
   initialBalance: number
   sortOrder: number
   isSystem: boolean
+  parentId?: string
   createdAt: string
 }
 

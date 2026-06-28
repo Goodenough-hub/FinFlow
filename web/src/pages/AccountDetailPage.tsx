@@ -4,33 +4,77 @@ import type { Account } from '../db/models'
 import { accountTypeLabel } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate } from '../utils/date'
+import { getLeafAccounts } from '../utils/account'
 import { useQuery } from '../hooks/useQuery'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
 import AccountIcon from '../components/AccountIcon'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
+import AddSubAccountDialog from '../components/AddSubAccountDialog'
 import './AccountDetailPage.css'
 
 export default function AccountDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
 
-  const { byId: accsById } = useAccounts()
+  const { byId: accsById, list: allAccounts = [] } = useAccounts()
   const account = id ? accsById.get(id) : undefined
   const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
 
   const [filterMonth, setFilterMonth] = useState(new Date())
   const [editing, setEditing] = useState(false)
   const [recharging, setRecharging] = useState(false)
+  const [addingChild, setAddingChild] = useState(false)
 
-  const accountTransactions = useMemo(
-    () => allTransactions.filter(t => t.accountId === id || t.toAccountId === id),
-    [allTransactions, id]
+  const childAccounts = useMemo(
+    () => id ? allAccounts.filter(a => a.parentId === id).sort((a, b) => a.sortOrder - b.sortOrder) : [],
+    [allAccounts, id]
   )
+
+  const isGroup = childAccounts.length > 0
+
+  // 分组容器的流水 = 子账户流水的合集；叶子账户流水 = 自己的
+  const accountTransactions = useMemo(
+    () => {
+      if (!id) return []
+      if (isGroup) {
+        const childIds = new Set(childAccounts.map(c => c.id))
+        return allTransactions.filter(t =>
+          (t.accountId && childIds.has(t.accountId)) ||
+          (t.toAccountId && childIds.has(t.toAccountId))
+        )
+      }
+      return allTransactions.filter(t => t.accountId === id || t.toAccountId === id)
+    },
+    [allTransactions, id, isGroup, childAccounts]
+  )
+
+  // 子账户余额 map（用于分组容器合计 + 子账户列表展示）
+  const childBalances = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!isGroup) return map
+    for (const c of childAccounts) {
+      let total = c.initialBalance
+      for (const t of allTransactions) {
+        if (t.type === 'transfer') {
+          if (t.accountId === c.id) total -= t.amount
+          if (t.toAccountId === c.id) total += t.amount
+        } else if (t.accountId === c.id) {
+          if (t.type === 'income') total += t.amount
+          else if (t.type === 'expense') total -= t.amount
+        }
+      }
+      map.set(c.id, total)
+    }
+    return map
+  }, [isGroup, childAccounts, allTransactions])
 
   const balance = useMemo(() => {
     if (!account) return 0
+    if (isGroup) {
+      return childAccounts.reduce((s, c) => s + (childBalances.get(c.id) ?? 0), 0)
+    }
     let total = account.initialBalance
     for (const t of accountTransactions) {
       if (t.type === 'transfer') {
@@ -42,7 +86,7 @@ export default function AccountDetailPage() {
       }
     }
     return total
-  }, [account, accountTransactions, id])
+  }, [account, isGroup, childAccounts, childBalances, accountTransactions, id])
 
   const monthTransactions = useMemo(() => {
     const y = filterMonth.getFullYear()
@@ -56,16 +100,29 @@ export default function AccountDetailPage() {
   const { monthInflow, monthOutflow } = useMemo(() => {
     let inflow = 0
     let outflow = 0
+    const childIdSet = isGroup ? new Set(childAccounts.map(c => c.id)) : null
     for (const t of monthTransactions) {
-      if (t.type === 'income' && t.accountId === id) inflow += t.amount
-      else if (t.type === 'expense' && t.accountId === id) outflow += t.amount
-      else if (t.type === 'transfer') {
-        if (t.toAccountId === id) inflow += t.amount
-        if (t.accountId === id) outflow += t.amount
+      if (isGroup) {
+        const accIn = t.accountId && childIdSet!.has(t.accountId)
+        const toIn = t.toAccountId && childIdSet!.has(t.toAccountId)
+        if (t.type === 'income' && accIn) inflow += t.amount
+        else if (t.type === 'expense' && accIn) outflow += t.amount
+        else if (t.type === 'transfer') {
+          // 子账户之间转账算内部转移，不计入
+          if (accIn && !toIn) outflow += t.amount
+          else if (toIn && !accIn) inflow += t.amount
+        }
+      } else {
+        if (t.type === 'income' && t.accountId === id) inflow += t.amount
+        else if (t.type === 'expense' && t.accountId === id) outflow += t.amount
+        else if (t.type === 'transfer') {
+          if (t.toAccountId === id) inflow += t.amount
+          if (t.accountId === id) outflow += t.amount
+        }
       }
     }
     return { monthInflow: inflow, monthOutflow: outflow }
-  }, [monthTransactions, id])
+  }, [monthTransactions, id, isGroup, childAccounts])
 
   if (!account) {
     return (
@@ -83,6 +140,7 @@ export default function AccountDetailPage() {
   }
 
   const isTransit = account.type === 'transit'
+  const canHaveChildren = ['alipay', 'wechat', 'unionpay', 'bank', 'fixed'].includes(account.type)
   const monthLabel = `${filterMonth.getFullYear()}年${filterMonth.getMonth() + 1}月`
 
   const stepMonth = (delta: number) => {
@@ -90,6 +148,16 @@ export default function AccountDetailPage() {
   }
 
   const handleDelete = async () => {
+    if (isGroup) {
+      if (!confirm(`此账户下有 ${childAccounts.length} 个子账户，将一并删除。相关交易会保留但失去账户关联。继续？`)) return
+      for (const c of childAccounts) {
+        await accountsApi.remove(c.id)
+      }
+      await accountsApi.remove(account.id)
+      await refreshAccounts()
+      navigate('/accounts')
+      return
+    }
     const txCount = accountTransactions.length
     const msg = txCount > 0
       ? `删除此账户？该账户下有 ${txCount} 笔交易，删除后这些交易将保留但失去账户关联。`
@@ -98,6 +166,12 @@ export default function AccountDetailPage() {
     await accountsApi.remove(account.id)
     await refreshAccounts()
     navigate('/accounts')
+  }
+
+  const handleDeleteChild = async (childId: string, childName: string) => {
+    if (!confirm(`删除子账户「${childName}」？相关交易将保留但失去账户关联。`)) return
+    await accountsApi.remove(childId)
+    await refreshAccounts()
   }
 
   return (
@@ -116,10 +190,58 @@ export default function AccountDetailPage() {
             <div className={`balance-amount ${balance < 0 ? 'negative' : ''}`}>
               {asCurrency(balance)}
             </div>
-            <div className="balance-label">当前余额</div>
+            <div className="balance-label">{isGroup ? '合计余额' : '当前余额'}</div>
           </div>
         </div>
       </div>
+
+      {canHaveChildren && (
+        <section className="subaccount-section">
+          <div className="section-header">
+            <span className="section-title">子账户{isGroup ? ` · ${childAccounts.length}` : ''}</span>
+            <button className="header-action" onClick={() => setAddingChild(true)}>+ 添加</button>
+          </div>
+          {childAccounts.length === 0 ? (
+            <div className="card">
+              <EmptyState
+                icon="💳"
+                title="暂无子账户"
+                subtitle="点「+ 添加」挂一个子账户，本账户会变为容器"
+                height={120}
+              />
+            </div>
+          ) : (
+            <div className="card account-list">
+              {childAccounts.map(c => (
+                <div
+                  key={c.id}
+                  className="account-row child"
+                  onClick={() => navigate(`/accounts/${c.id}`)}
+                >
+                  <AccountIcon type={c.type} icon={c.icon} colorHex={c.colorHex} size={36} />
+                  <div className="account-info">
+                    <div className="account-name">{c.name}</div>
+                    <div className="account-type">{accountTypeLabel[c.type]}</div>
+                  </div>
+                  <div className={`account-balance ${(childBalances.get(c.id) ?? 0) < 0 ? 'negative' : ''}`}>
+                    {asCurrency(childBalances.get(c.id) ?? 0)}
+                  </div>
+                  <button
+                    className="account-row-delete"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteChild(c.id, c.name)
+                    }}
+                    aria-label="删除子账户"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="card monthly-card">
         <div className="monthly-header">
@@ -183,6 +305,15 @@ export default function AccountDetailPage() {
       )}
       {recharging && (
         <RechargeDialog account={account} onClose={() => setRecharging(false)} />
+      )}
+      {addingChild && (
+        <AddSubAccountDialog
+          parentId={account.id}
+          parentType={account.type}
+          parentColor={account.colorHex}
+          nextOrder={childAccounts.length}
+          onClose={() => setAddingChild(false)}
+        />
       )}
 
       {!account.isSystem && (
@@ -302,7 +433,7 @@ function RechargeDialog({ account, onClose }: RechargeProps) {
   const { list: allAccounts = [] } = useAccounts()
 
   const sources = useMemo(
-    () => allAccounts.filter(a => a.id !== account.id && a.type !== 'fixed'),
+    () => getLeafAccounts(allAccounts).filter(a => a.id !== account.id && a.type !== 'fixed'),
     [allAccounts, account.id]
   )
 

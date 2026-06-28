@@ -236,6 +236,63 @@
   gap: 10px;
 }
 
+.account-group {
+  margin-bottom: 12px;
+}
+
+.account-group:last-child {
+  margin-bottom: 0;
+}
+
+.account-parent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--bg-card-elevated);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.account-parent-row.selected {
+  background: var(--accent-tint);
+  border-color: var(--accent-blue);
+}
+
+.account-parent-row.dim {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.account-parent-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  text-align: left;
+}
+
+.account-parent-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.account-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 8px 0 6px 2px;
+  padding-left: 2px;
+}
+
+.account-group-title:first-child {
+  margin-top: 0;
+}
+
 .account-cell {
   display: flex;
   flex-direction: column;

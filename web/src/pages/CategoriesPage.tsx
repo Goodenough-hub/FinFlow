@@ -85,8 +85,8 @@ export default function CategoriesPage() {
     if (target < 0 || target >= siblings.length) return
     const swap = siblings[target]
     await Promise.all([
-      categoriesApi.update(cat.id, { sortOrder: swap.sortOrder }),
-      categoriesApi.update(swap.id, { sortOrder: cat.sortOrder })
+      categoriesApi.update(cat.id, { ...cat, sortOrder: swap.sortOrder }),
+      categoriesApi.update(swap.id, { ...swap, sortOrder: cat.sortOrder })
     ])
     await refreshCategories()
   }
@@ -239,6 +239,7 @@ function CategoryDialog({ state, type, onClose, onDelete }: DialogProps) {
     if (!canSave) return
     if (existing) {
       await categoriesApi.update(existing.id, {
+        ...existing,
         name: name.trim(),
         icon,
         colorHex
