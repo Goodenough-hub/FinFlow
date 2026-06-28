@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db/db'
-import type { Budget, Category, Transaction } from '../db/models'
 import { collectDescendantIds } from '../utils/category'
 import { asCurrency } from '../utils/format'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories } from '../hooks/useLookup'
+import { budgetsApi, transactionsApi } from '../api/finflow'
 import './OverspendAlertBanner.css'
 
 interface Alert {
@@ -18,9 +18,9 @@ export default function OverspendAlertBanner() {
   const year = now.getFullYear()
   const month = now.getMonth() + 1
 
-  const allBudgets = useLiveQuery(() => db.budgets.toArray(), [], [] as Budget[])
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { data: allBudgets = [] } = useQuery(() => budgetsApi.list(year, month), [year, month])
+  const { list: allCategories = [] } = useCategories()
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
 
   const alerts = useMemo<Alert[]>(() => {
     const monthBudgets = allBudgets.filter(b => b.year === year && b.month === month)

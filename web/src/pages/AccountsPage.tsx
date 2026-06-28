@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
 import ReactECharts from 'echarts-for-react'
-import { db, uid } from '../db/db'
-import type { Account, AccountType, BankPreset, Transaction } from '../db/models'
+import type { Account, AccountType, BankPreset } from '../db/models'
 import {
   accountTypeLabel,
   accountTypeIcon,
@@ -14,6 +12,9 @@ import {
 import { asCurrency } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
 import { useTheme } from '../hooks/useTheme'
+import { useQuery } from '../hooks/useQuery'
+import { useAccounts, refreshAccounts } from '../hooks/useLookup'
+import { accountsApi, transactionsApi } from '../api/finflow'
 import AccountIcon from '../components/AccountIcon'
 import './AccountsPage.css'
 
@@ -38,8 +39,8 @@ function isDefaultAccountName(name: string): boolean {
 
 export default function AccountsPage() {
   const navigate = useNavigate()
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { list: allAccounts = [] } = useAccounts()
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
   const { effective } = useTheme()
 
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
@@ -347,7 +348,8 @@ function InitialBalanceDialog({ accounts, onClose }: InitialBalanceDialogProps) 
   const handleSave = async () => {
     if (!canSave) return
     const value = parseFloat(amount) || 0
-    await db.accounts.update(accountId, { initialBalance: value })
+    await accountsApi.update(accountId, { initialBalance: value })
+    await refreshAccounts()
     onClose()
   }
 
@@ -449,7 +451,7 @@ function AccountDialog({ state, onClose }: DialogProps) {
     if (!canSave) return
     const bal = parseFloat(initialBalance) || 0
     if (existing) {
-      await db.accounts.update(existing.id, {
+      await accountsApi.update(existing.id, {
         name: name.trim(),
         type,
         initialBalance: bal,
@@ -457,26 +459,25 @@ function AccountDialog({ state, onClose }: DialogProps) {
         colorHex
       })
     } else {
-      const count = await db.accounts.count()
-      await db.accounts.add({
-        id: uid(),
+      await accountsApi.create({
         name: name.trim(),
         type,
         icon,
         colorHex,
         initialBalance: bal,
-        sortOrder: count,
-        isSystem: false,
-        createdAt: new Date().toISOString()
+        sortOrder: 0,
+        isSystem: false
       })
     }
+    await refreshAccounts()
     onClose()
   }
 
   const handleDelete = async () => {
     if (!existing) return
     if (!confirm('删除此账户？相关交易将保留但失去账户关联。')) return
-    await db.accounts.delete(existing.id)
+    await accountsApi.remove(existing.id)
+    await refreshAccounts()
     onClose()
   }
 

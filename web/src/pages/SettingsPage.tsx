@@ -1,62 +1,74 @@
-import { useLiveQuery } from 'dexie-react-hooks'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { db } from '../db/db'
 import type { Account, Category, Transaction } from '../db/models'
 import { usePWA } from '../hooks/usePWA'
 import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../theme'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, useAccounts, refreshAllLookups } from '../hooks/useLookup'
+import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
 import './SettingsPage.css'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
   const { canInstall, installed, offline, install } = usePWA()
-  const txCount = useLiveQuery(() => db.transactions.count(), [], 0)
-  const catCount = useLiveQuery(() => db.categories.count(), [], 0)
-  const accCount = useLiveQuery(() => db.accounts.count(), [], 0)
+  const { data: txs = [] } = useQuery(() => transactionsApi.list(), [])
+  const { list: cats = [] } = useCategories()
+  const { list: accs = [] } = useAccounts()
   const { mode: theme, setThemeMode } = useTheme()
+  const [busy, setBusy] = useState(false)
+
+  const txCount = txs.length
+  const catCount = cats.length
+  const accCount = accs.length
 
   const handleThemeChange = (mode: ThemeMode) => {
     setThemeMode(mode)
   }
 
   const handleFillSample = async () => {
-    const existing = await db.transactions.count()
-    if (existing > 0) {
+    if (txCount > 0) {
       alert('已存在交易数据，无法填充示例。请先清空所有交易。')
       return
     }
     if (!confirm('填充最近 24 个月示例交易数据？')) return
-    await fillSampleData()
-    alert('示例数据已填充')
+    setBusy(true)
+    try {
+      await fillSampleData(cats, accs)
+      alert('示例数据已填充')
+    } catch (e) {
+      alert(`填充失败：${(e as Error).message}`)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleClearAll = async () => {
     if (!confirm('清空所有交易数据？此操作不可恢复！')) return
     if (!confirm('再次确认：将删除全部交易记录，分类和账户保留。')) return
-    await db.transactions.clear()
-    alert('已清空交易数据')
+    setBusy(true)
+    try {
+      await Promise.all(txs.map(t => transactionsApi.remove(t.id)))
+      alert('已清空交易数据')
+    } catch (e) {
+      alert(`清空失败：${(e as Error).message}`)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleExportCSV = async () => {
-    const rows = await db.transactions.toArray()
-    if (rows.length === 0) {
+    if (txs.length === 0) {
       alert('没有可导出的交易')
       return
     }
-    const cats = await db.categories.toArray()
-    const accs = await db.accounts.toArray()
-    const csv = toCSV(rows, cats, accs)
+    const csv = toCSV(txs, cats, accs)
     const dateStr = new Date().toISOString().slice(0, 10)
     download(`FinFlow_Export_${dateStr}.csv`, csv, 'text/csv;charset=utf-8;')
   }
 
   const handleExportJSON = async () => {
-    const [transactions, categories, accounts] = await Promise.all([
-      db.transactions.toArray(),
-      db.categories.toArray(),
-      db.accounts.toArray()
-    ])
-    const payload = { exportedAt: new Date().toISOString(), transactions, categories, accounts }
+    const payload = { exportedAt: new Date().toISOString(), transactions: txs, categories: cats, accounts: accs }
     download(
       'finflow-backup.json',
       JSON.stringify(payload, null, 2),
@@ -68,27 +80,31 @@ export default function SettingsPage() {
     try {
       const text = await file.text()
       const data = JSON.parse(text)
-      const txs = Array.isArray(data?.transactions) ? data.transactions : []
-      const cats = Array.isArray(data?.categories) ? data.categories : []
-      const accs = Array.isArray(data?.accounts) ? data.accounts : []
-      if (txs.length === 0 && cats.length === 0 && accs.length === 0) {
+      const txsIn = Array.isArray(data?.transactions) ? data.transactions : []
+      const catsIn = Array.isArray(data?.categories) ? data.categories : []
+      const accsIn = Array.isArray(data?.accounts) ? data.accounts : []
+      if (txsIn.length === 0 && catsIn.length === 0 && accsIn.length === 0) {
         alert('未在备份中找到有效数据')
         return
       }
-      if (!confirm(`将导入 ${txs.length} 笔交易、${cats.length} 个分类、${accs.length} 个账户。\n当前数据将被覆盖，是否继续？`)) return
-      await db.transaction('rw', db.transactions, db.categories, db.accounts, async () => {
-        await Promise.all([
-          db.transactions.clear(),
-          db.categories.clear(),
-          db.accounts.clear()
-        ])
-        if (cats.length > 0) await db.categories.bulkAdd(cats)
-        if (accs.length > 0) await db.accounts.bulkAdd(accs)
-        if (txs.length > 0) await db.transactions.bulkAdd(txs)
-      })
-      alert(`导入完成：${txs.length} 笔交易、${cats.length} 个分类、${accs.length} 个账户`)
+      if (!confirm(`将导入 ${txsIn.length} 笔交易、${catsIn.length} 个分类、${accsIn.length} 个账户。\n注意：备份中的旧 ID 会被忽略，将生成新 ID。当前数据不会被覆盖。\n是否继续？`)) return
+      setBusy(true)
+      let okTx = 0, okCat = 0, okAcc = 0
+      for (const c of catsIn) {
+        try { await categoriesApi.create(stripId(c) as any); okCat++ } catch {}
+      }
+      for (const a of accsIn) {
+        try { await accountsApi.create(stripId(a) as any); okAcc++ } catch {}
+      }
+      await refreshAllLookups()
+      for (const t of txsIn) {
+        try { await transactionsApi.create(stripId(t) as any); okTx++ } catch {}
+      }
+      alert(`导入完成：${okTx} 笔交易、${okCat} 个分类、${okAcc} 个账户`)
     } catch (e) {
       alert(`导入失败：${(e as Error).message}`)
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -167,25 +183,26 @@ export default function SettingsPage() {
             <span className="action-label">导入 CSV</span>
             <span className="action-chevron">›</span>
           </button>
-          <button className="action-row" onClick={handleExportCSV}>
+          <button className="action-row" disabled={busy} onClick={handleExportCSV}>
             <span className="action-icon">📄</span>
             <span className="action-label">导出 CSV</span>
             <span className="action-chevron">›</span>
           </button>
-          <button className="action-row" onClick={handleExportJSON}>
+          <button className="action-row" disabled={busy} onClick={handleExportJSON}>
             <span className="action-icon">💾</span>
             <span className="action-label">导出 JSON 备份</span>
             <span className="action-chevron">›</span>
           </button>
           <label className="action-row" htmlFor="json-import-input">
             <span className="action-icon">📥</span>
-            <span className="action-label">导入 JSON 备份</span>
+            <span className="action-label">{busy ? '处理中…' : '导入 JSON 备份'}</span>
             <span className="action-chevron">›</span>
             <input
               id="json-import-input"
               type="file"
               accept="application/json,.json"
               hidden
+              disabled={busy}
               onChange={e => {
                 const f = e.target.files?.[0]
                 if (f) handleImportJSON(f)
@@ -199,14 +216,14 @@ export default function SettingsPage() {
       <section className="settings-group">
         <div className="group-title">示例数据</div>
         <div className="card group-card">
-          <button className="action-row" onClick={handleFillSample}>
+          <button className="action-row" disabled={busy} onClick={handleFillSample}>
             <span className="action-icon">✨</span>
-            <span className="action-label">填充 30 天示例数据</span>
+            <span className="action-label">{busy ? '处理中…' : '填充 30 天示例数据'}</span>
             <span className="action-chevron">›</span>
           </button>
-          <button className="action-row danger" onClick={handleClearAll}>
+          <button className="action-row danger" disabled={busy} onClick={handleClearAll}>
             <span className="action-icon">🗑</span>
-            <span className="action-label">清空所有交易</span>
+            <span className="action-label">{busy ? '处理中…' : '清空所有交易'}</span>
             <span className="action-chevron">›</span>
           </button>
         </div>
@@ -246,16 +263,21 @@ export default function SettingsPage() {
         <div className="card group-card">
           <div className="stat-row">
             <span>版本</span>
-            <strong>FinFlow PWA · v0.1.0</strong>
+            <strong>FinFlow PWA · v0.2.0</strong>
           </div>
           <div className="stat-row">
-            <span>本地存储</span>
-            <strong>IndexedDB</strong>
+            <span>后端</span>
+            <strong>AppPilot Server</strong>
           </div>
         </div>
       </section>
     </div>
   )
+}
+
+function stripId<T extends Record<string, any>>(obj: T): Omit<T, 'id'> {
+  const { id: _id, ...rest } = obj
+  return rest as Omit<T, 'id'>
 }
 
 function download(filename: string, content: string, mime: string) {
@@ -304,20 +326,17 @@ function csvEscape(s: string): string {
   return s
 }
 
-async function fillSampleData() {
-  const allCats = await db.categories.toArray()
-  const expenseCats = allCats.filter(c => c.type === 'expense')
-  const leafCats = expenseCats.filter(c => !allCats.some(x => x.parentId === c.id))
+async function fillSampleData(cats: Category[], accs: Account[]) {
+  const expenseCats = cats.filter(c => c.type === 'expense')
+  const leafCats = expenseCats.filter(c => !cats.some(x => x.parentId === c.id))
   const fallbackExpense = expenseCats
-  const incomeCats = allCats
+  const incomeCats = cats
     .filter(c => c.type === 'income')
-    .filter(c => !allCats.some(x => x.parentId === c.id))
-  const accounts = await db.accounts.toArray()
-  const liquidAccounts = accounts.filter(a => a.type !== 'fixed')
+    .filter(c => !cats.some(x => x.parentId === c.id))
+  const liquidAccounts = accs.filter(a => a.type !== 'fixed')
 
   if (leafCats.length === 0 || liquidAccounts.length === 0) return
 
-  const txs: Transaction[] = []
   const now = new Date()
   const vendors = ['高德', '滴滴', '美团', 'T3出行', '曹操出行']
 
@@ -330,6 +349,8 @@ async function fillSampleData() {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
   }
 
+  const batch: Array<Omit<Transaction, 'id' | 'createdAt'>> = []
+
   for (let monthsAgo = 23; monthsAgo >= 0; monthsAgo--) {
     const monthStart = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1)
     const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate()
@@ -337,14 +358,12 @@ async function fillSampleData() {
     const salaryCat = incomeCats.find(c => c.name === '工资') ?? incomeCats[0]
     if (salaryCat) {
       const payday = new Date(monthStart.getFullYear(), monthStart.getMonth(), Math.min(10, daysInMonth))
-      txs.push({
-        id: crypto.randomUUID(),
+      batch.push({
         amount: 12000 + Math.floor(Math.random() * 500),
         type: 'income',
         note: '月度工资',
         date: isoDate(payday),
         time: '09:00',
-        createdAt: payday.toISOString(),
         categoryId: salaryCat.id,
         accountId: liquidAccounts[0].id
       })
@@ -354,14 +373,12 @@ async function fillSampleData() {
       const extraCat = incomeCats.find(c => c.name === '兼职') ?? incomeCats[0]
       if (extraCat) {
         const day = new Date(monthStart.getFullYear(), monthStart.getMonth(), 5 + Math.floor(Math.random() * 15))
-        txs.push({
-          id: crypto.randomUUID(),
+        batch.push({
           amount: 800 + Math.floor(Math.random() * 1200),
           type: 'income',
           note: '兼职报酬',
           date: isoDate(day),
           time: pickTime(),
-          createdAt: day.toISOString(),
           categoryId: extraCat.id,
           accountId: liquidAccounts[Math.floor(Math.random() * liquidAccounts.length)].id
         })
@@ -377,14 +394,12 @@ async function fillSampleData() {
       const d = new Date(monthStart.getFullYear(), monthStart.getMonth(), day)
       const amount = pickAmount(cat.name)
       const vendor = cat.name === '打车' ? vendors[Math.floor(Math.random() * vendors.length)] : undefined
-      txs.push({
-        id: crypto.randomUUID(),
+      batch.push({
         amount,
         type: 'expense',
         note: '',
         date: isoDate(d),
         time: pickTime(),
-        createdAt: new Date(d.getTime() + i * 60000).toISOString(),
         categoryId: cat.id,
         accountId: acc.id,
         vendor
@@ -392,7 +407,9 @@ async function fillSampleData() {
     }
   }
 
-  await db.transactions.bulkAdd(txs)
+  for (const t of batch) {
+    await transactionsApi.create(t)
+  }
 }
 
 function pickAmount(catName: string): number {

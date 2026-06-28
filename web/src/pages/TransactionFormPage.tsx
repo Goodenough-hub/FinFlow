@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db, uid } from '../db/db'
-import type { Account, Category, Transaction, TransactionType } from '../db/models'
+import type { Category, Transaction, TransactionType } from '../db/models'
 import { toISODate } from '../utils/date'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, useAccounts } from '../hooks/useLookup'
+import { transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import AccountIcon from '../components/AccountIcon'
 import './TransactionFormPage.css'
@@ -15,10 +16,10 @@ export default function TransactionFormPage() {
   const { id } = useParams()
   const isEdit = Boolean(id)
 
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
-  const existing = useLiveQuery(
-    async () => (id ? await db.transactions.get(id) : undefined),
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
+  const { data: existing } = useQuery(
+    () => (id ? transactionsApi.get(id) : Promise.resolve(undefined)),
     [id]
   )
 
@@ -119,37 +120,24 @@ export default function TransactionFormPage() {
   const handleSave = async () => {
     const value = parseFloat(amountText.replace(',', '.'))
     if (!Number.isFinite(value) || value <= 0) return
-    const now = new Date().toISOString()
 
     if (isTransfer) {
       if (!selectedAccountId || !toAccountId || selectedAccountId === toAccountId) return
+      const payload: Partial<Transaction> = {
+        amount: value,
+        type,
+        note,
+        date,
+        time,
+        accountId: selectedAccountId,
+        toAccountId,
+        categoryId: undefined,
+        vendor: undefined
+      }
       if (existing) {
-        await db.transactions.update(existing.id, {
-          amount: value,
-          type,
-          note,
-          date,
-          time,
-          accountId: selectedAccountId,
-          toAccountId,
-          categoryId: undefined,
-          vendor: undefined
-        })
+        await transactionsApi.update(existing.id, payload)
       } else {
-        const tx: Transaction = {
-          id: uid(),
-          amount: value,
-          type,
-          note,
-          date,
-          time,
-          createdAt: now,
-          accountId: selectedAccountId,
-          toAccountId,
-          categoryId: undefined,
-          vendor: undefined
-        }
-        await db.transactions.add(tx)
+        await transactionsApi.create(payload as Omit<Transaction, 'id' | 'createdAt'>)
       }
       navigate(-1)
       return
@@ -157,33 +145,21 @@ export default function TransactionFormPage() {
 
     if (!selectedCategoryId) return
     const vendorValue = showVendorPicker && vendor ? vendor : undefined
-
+    const payload: Partial<Transaction> = {
+      amount: value,
+      type,
+      note,
+      date,
+      time,
+      categoryId: selectedCategoryId,
+      accountId: selectedAccountId,
+      toAccountId: undefined,
+      vendor: vendorValue
+    }
     if (existing) {
-      await db.transactions.update(existing.id, {
-        amount: value,
-        type,
-        note,
-        date,
-        time,
-        categoryId: selectedCategoryId,
-        accountId: selectedAccountId,
-        toAccountId: undefined,
-        vendor: vendorValue
-      })
+      await transactionsApi.update(existing.id, payload)
     } else {
-      const tx: Transaction = {
-        id: uid(),
-        amount: value,
-        type,
-        note,
-        date,
-        time,
-        createdAt: now,
-        categoryId: selectedCategoryId,
-        accountId: selectedAccountId,
-        vendor: vendorValue
-      }
-      await db.transactions.add(tx)
+      await transactionsApi.create(payload as Omit<Transaction, 'id' | 'createdAt'>)
     }
     navigate(-1)
   }
@@ -191,7 +167,7 @@ export default function TransactionFormPage() {
   const handleDelete = async () => {
     if (!existing) return
     if (!confirm('确定删除此交易？')) return
-    await db.transactions.delete(existing.id)
+    await transactionsApi.remove(existing.id)
     navigate(-1)
   }
 

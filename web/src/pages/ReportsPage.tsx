@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
 import ReactECharts from 'echarts-for-react'
-import { db } from '../db/db'
-import type { Account, Category, Transaction } from '../db/models'
+import type { Account, Transaction } from '../db/models'
 import { asCurrency, formatCompact } from '../utils/format'
 import { yearString, monthYearString } from '../utils/date'
 import { chartColors } from '../utils/chartTheme'
 import { useTheme } from '../hooks/useTheme'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, useAccounts } from '../hooks/useLookup'
+import { transactionsApi } from '../api/finflow'
 import './ReportsPage.css'
 
 type ViewMode = 'year' | 'month'
@@ -19,9 +20,9 @@ export default function ReportsPage() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
 
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
   const { effective } = useTheme()
 
   const refDate = useMemo(() => new Date(year, month, 1), [year, month])

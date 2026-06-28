@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db/db'
 import type { Category, Transaction, TransactionType } from '../db/models'
 import {
   amountForCategory,
@@ -14,6 +12,7 @@ import {
 import { asCurrency, formatPercent } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
 import { useTheme } from '../hooks/useTheme'
+import { useCategories } from '../hooks/useLookup'
 import CategoryIcon from './CategoryIcon'
 import './CategoryAnalysis.css'
 
@@ -44,7 +43,7 @@ interface RowItem {
 }
 
 export default function CategoryAnalysis({ transactions, type }: Props) {
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
+  const { list: allCategories = [] } = useCategories()
   useTheme()
   const [drillPath, setDrillPath] = useState<Category[]>([])
 

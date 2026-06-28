@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db, uid } from '../db/db'
 import type { Account, Category, Transaction, TransactionType } from '../db/models'
 import { parseCSV, buildTemplateCSV, type ParsedRow } from '../utils/csv'
 import { asCurrency } from '../utils/format'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, useAccounts, refreshCategories } from '../hooks/useLookup'
+import { transactionsApi, categoriesApi } from '../api/finflow'
 import './ImportPage.css'
 
 type Phase = 'pick' | 'preview' | 'done'
@@ -20,9 +21,9 @@ export default function ImportPage() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
-  const existingTx = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
+  const { data: existingTx = [] } = useQuery(() => transactionsApi.list(), [])
 
   const [phase, setPhase] = useState<Phase>('pick')
   const [rows, setRows] = useState<ParsedRow[]>([])
@@ -86,17 +87,16 @@ export default function ImportPage() {
           let cat = catByName.get(r.categoryName)
           if (!cat) {
             const type: TransactionType = r.type === 'income' ? 'income' : 'expense'
-            const count = await db.categories.where('type').equals(type).count()
-            cat = {
-              id: uid(),
+            const sameTypeCount = allCategories.filter(c => c.type === type).length
+            cat = await categoriesApi.create({
               name: r.categoryName,
               type,
               icon: '🏷',
               colorHex: '#5B8DEF',
-              sortOrder: count,
+              sortOrder: sameTypeCount,
               isSystem: false
-            }
-            await db.categories.add(cat)
+            })
+            allCategories.push(cat)
             catByName.set(cat.name, cat)
             newCategories.push(cat.name)
           }
@@ -113,7 +113,7 @@ export default function ImportPage() {
         }
 
         toAdd.push({
-          id: uid(),
+          id: '',
           amount: r.amount,
           type: r.type,
           note: r.note ?? '',
@@ -128,8 +128,11 @@ export default function ImportPage() {
         imported++
       }
 
-      if (toAdd.length > 0) {
-        await db.transactions.bulkAdd(toAdd)
+      for (const t of toAdd) {
+        await transactionsApi.create(t)
+      }
+      if (newCategories.length > 0) {
+        await refreshCategories()
       }
 
       setResult({

@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db/db'
-import type { Transaction, TransactionType } from '../db/models'
+import type { TransactionType } from '../db/models'
 import { filterByPeriod } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
+import { useQuery } from '../hooks/useQuery'
+import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
 import SummaryCard from '../components/SummaryCard'
 import BudgetOverview from '../components/BudgetOverview'
@@ -22,7 +22,7 @@ export default function HomePage() {
   const [date, setDate] = useState<Date>(new Date())
   const [categoryTab, setCategoryTab] = useState<TransactionType>('expense')
 
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
 
   const filtered = useMemo(
     () => filterByPeriod(allTransactions, period, date),

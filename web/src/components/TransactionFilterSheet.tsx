@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db/db'
-import type { Account, Category, TransactionType } from '../db/models'
+import type { TransactionType } from '../db/models'
+import { useCategories, useAccounts } from '../hooks/useLookup'
 import CategoryIcon from './CategoryIcon'
 import './TransactionFilterSheet.css'
 
@@ -57,8 +56,8 @@ interface Props {
 }
 
 export default function TransactionFilterSheet({ criteria, onApply, onClose }: Props) {
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
 
   const [draft, setDraft] = useState<FilterCriteria>(criteria)
 

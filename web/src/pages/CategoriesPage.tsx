@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
-import { db, uid } from '../db/db'
-import type { Category, CategoryType, Transaction } from '../db/models'
+import type { Category, CategoryType } from '../db/models'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, refreshCategories } from '../hooks/useLookup'
+import { categoriesApi, transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import './CategoriesPage.css'
 
@@ -25,8 +26,8 @@ const PRESET_ICONS = [
 
 export default function CategoriesPage() {
   const navigate = useNavigate()
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { list: allCategories = [] } = useCategories()
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
 
   const [activeType, setActiveType] = useState<CategoryType>('expense')
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -84,9 +85,10 @@ export default function CategoriesPage() {
     if (target < 0 || target >= siblings.length) return
     const swap = siblings[target]
     await Promise.all([
-      db.categories.update(cat.id, { sortOrder: swap.sortOrder }),
-      db.categories.update(swap.id, { sortOrder: cat.sortOrder })
+      categoriesApi.update(cat.id, { sortOrder: swap.sortOrder }),
+      categoriesApi.update(swap.id, { sortOrder: cat.sortOrder })
     ])
+    await refreshCategories()
   }
 
   const handleDelete = async (cat: Category) => {
@@ -101,7 +103,8 @@ export default function CategoriesPage() {
     } else {
       if (!confirm(`删除分类「${cat.name}」？`)) return
     }
-    await db.categories.delete(cat.id)
+    await categoriesApi.remove(cat.id)
+    await refreshCategories()
     setDialog({ mode: 'closed' })
   }
 
@@ -224,6 +227,7 @@ function CategoryDialog({ state, type, onClose, onDelete }: DialogProps) {
   const isEdit = state.mode === 'edit'
   const existing = isEdit ? state.category : undefined
   const parentId = !isEdit && state.mode === 'new' ? state.parentId : undefined
+  const { list: allCategories = [] } = useCategories()
 
   const [name, setName] = useState(existing?.name ?? '')
   const [icon, setIcon] = useState(existing?.icon ?? '💸')
@@ -234,17 +238,15 @@ function CategoryDialog({ state, type, onClose, onDelete }: DialogProps) {
   const handleSave = async () => {
     if (!canSave) return
     if (existing) {
-      await db.categories.update(existing.id, {
+      await categoriesApi.update(existing.id, {
         name: name.trim(),
         icon,
         colorHex
       })
     } else {
-      const all = await db.categories.toArray()
-      const siblings = all.filter(c => c.type === type && c.parentId === parentId)
+      const siblings = allCategories.filter(c => c.type === type && c.parentId === parentId)
       const maxOrder = siblings.reduce((m, c) => Math.max(m, c.sortOrder), -1)
-      await db.categories.add({
-        id: uid(),
+      await categoriesApi.create({
         name: name.trim(),
         type,
         icon,
@@ -254,6 +256,7 @@ function CategoryDialog({ state, type, onClose, onDelete }: DialogProps) {
         parentId
       })
     }
+    await refreshCategories()
     onClose()
   }
 

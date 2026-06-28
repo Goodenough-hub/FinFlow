@@ -1,6 +1,5 @@
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db/db'
 import type { Transaction } from '../db/models'
+import { useCategories, useAccounts } from '../hooks/useLookup'
 import { asCurrency } from '../utils/format'
 import CategoryIcon from './CategoryIcon'
 import './TransactionRow.css'
@@ -11,18 +10,11 @@ interface Props {
 }
 
 export default function TransactionRow({ transaction: t, showDate = false }: Props) {
-  const cat = useLiveQuery(
-    async () => (t.categoryId ? await db.categories.get(t.categoryId) : undefined),
-    [t.categoryId]
-  )
-  const acc = useLiveQuery(
-    async () => (t.accountId ? await db.accounts.get(t.accountId) : undefined),
-    [t.accountId]
-  )
-  const toAcc = useLiveQuery(
-    async () => (t.toAccountId ? await db.accounts.get(t.toAccountId) : undefined),
-    [t.toAccountId]
-  )
+  const { byId: cats } = useCategories()
+  const { byId: accs } = useAccounts()
+  const cat = t.categoryId ? cats.get(t.categoryId) : undefined
+  const acc = t.accountId ? accs.get(t.accountId) : undefined
+  const toAcc = t.toAccountId ? accs.get(t.toAccountId) : undefined
 
   const isIncome = t.type === 'income'
   const isTransfer = t.type === 'transfer'

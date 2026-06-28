@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
-import { db } from '../db/db'
-import type { Account, Category, Transaction } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { parseISODate } from '../utils/date'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, useAccounts } from '../hooks/useLookup'
+import { transactionsApi } from '../api/finflow'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
 import './SearchPage.css'
@@ -25,9 +25,9 @@ export default function SearchPage() {
     }
   })
 
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
 
   useEffect(() => {
     inputRef.current?.focus()

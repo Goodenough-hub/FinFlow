@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
-import { db, uid } from '../db/db'
 import type { Account, Category, RecurringTransaction, TransactionType } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate, parseISODate } from '../utils/date'
-import { processRecurring, computeNextDate } from '../services/recurring'
+import { computeNextDate } from '../services/recurring'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories, useAccounts } from '../hooks/useLookup'
+import { recurringApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import './RecurringPage.css'
 
@@ -36,9 +37,9 @@ export default function RecurringPage() {
   const navigate = useNavigate()
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
 
-  const allRecurring = useLiveQuery(() => db.recurring.toArray(), [], [] as RecurringTransaction[])
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { data: allRecurring = [], reload: reloadRecurring } = useQuery(() => recurringApi.list(), [])
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
 
   const sorted = useMemo(
     () => allRecurring.slice().sort((a, b) => a.nextDate.localeCompare(b.nextDate)),
@@ -46,8 +47,14 @@ export default function RecurringPage() {
   )
 
   const handleProcessNow = async () => {
-    const count = await processRecurring()
-    alert(count > 0 ? `已生成 ${count} 笔交易` : '当前无需生成')
+    try {
+      const result: any = await recurringApi.process()
+      const count = typeof result === 'number' ? result : (result?.processed ?? 0)
+      alert(count > 0 ? `已生成 ${count} 笔交易` : '当前无需生成')
+      reloadRecurring()
+    } catch (e) {
+      alert(`生成失败：${(e as Error).message}`)
+    }
   }
 
   return (
@@ -82,7 +89,8 @@ export default function RecurringPage() {
               onClick={() => setDialog({ mode: 'edit', recurring: r })}
               onToggle={async () => {
                 const next = r.isActive === false
-                await db.recurring.update(r.id, { isActive: next })
+                await recurringApi.update(r.id, { isActive: next })
+                reloadRecurring()
               }}
             />
           ))
@@ -101,6 +109,7 @@ export default function RecurringPage() {
         <RecurringDialog
           state={dialog}
           onClose={() => setDialog({ mode: 'closed' })}
+          onSaved={reloadRecurring}
         />
       )}
     </div>
@@ -170,14 +179,15 @@ function RecurringRow({ recurring: r, category, account, onClick, onToggle }: Ro
 interface DialogProps {
   state: Exclude<DialogState, { mode: 'closed' }>
   onClose: () => void
+  onSaved: () => void
 }
 
-function RecurringDialog({ state, onClose }: DialogProps) {
+function RecurringDialog({ state, onClose, onSaved }: DialogProps) {
   const isEdit = state.mode === 'edit'
   const existing = isEdit ? state.recurring : undefined
 
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { list: allCategories = [] } = useCategories()
+  const { list: allAccounts = [] } = useAccounts()
 
   const [type, setType] = useState<TransactionType>(existing?.type ?? 'expense')
   const [amountText, setAmountText] = useState(existing ? String(existing.amount) : '')
@@ -218,48 +228,35 @@ function RecurringDialog({ state, onClose }: DialogProps) {
       dayOfWeek: frequency === 'weekly' ? dayOfWeekNum : undefined
     }
     const nextDate = computeNextDate(startDate, rule)
-    if (existing) {
-      await db.recurring.update(existing.id, {
-        amount,
-        type,
-        note,
-        categoryId: categoryId || undefined,
-        accountId: accountId || undefined,
-        frequency,
-        interval: intervalNum,
-        dayOfMonth: rule.dayOfMonth,
-        dayOfWeek: rule.dayOfWeek,
-        startDate,
-        endDate: endDate || undefined,
-        nextDate,
-        isActive: existing.isActive !== false
-      })
-    } else {
-      await db.recurring.add({
-        id: uid(),
-        amount,
-        type,
-        note,
-        categoryId: categoryId || undefined,
-        accountId: accountId || undefined,
-        frequency,
-        interval: intervalNum,
-        dayOfMonth: rule.dayOfMonth,
-        dayOfWeek: rule.dayOfWeek,
-        startDate,
-        endDate: endDate || undefined,
-        nextDate,
-        isActive: true,
-        createdAt: new Date().toISOString()
-      })
+    const payload: Partial<RecurringTransaction> = {
+      amount,
+      type,
+      note,
+      categoryId: categoryId || undefined,
+      accountId: accountId || undefined,
+      frequency,
+      interval: intervalNum,
+      dayOfMonth: rule.dayOfMonth,
+      dayOfWeek: rule.dayOfWeek,
+      startDate,
+      endDate: endDate || undefined,
+      nextDate,
+      isActive: existing?.isActive !== false
     }
+    if (existing) {
+      await recurringApi.update(existing.id, payload)
+    } else {
+      await recurringApi.create(payload as Omit<RecurringTransaction, 'id' | 'createdAt'>)
+    }
+    onSaved()
     onClose()
   }
 
   const handleDelete = async () => {
     if (!existing) return
     if (!confirm('删除此周期性交易模板？已生成的交易不受影响。')) return
-    await db.recurring.delete(existing.id)
+    await recurringApi.remove(existing.id)
+    onSaved()
     onClose()
   }
 

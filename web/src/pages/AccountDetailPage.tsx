@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db, uid } from '../db/db'
-import type { Account, Transaction } from '../db/models'
+import type { Account } from '../db/models'
 import { accountTypeLabel } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate } from '../utils/date'
+import { useQuery } from '../hooks/useQuery'
+import { useAccounts, refreshAccounts } from '../hooks/useLookup'
+import { accountsApi, transactionsApi } from '../api/finflow'
 import AccountIcon from '../components/AccountIcon'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
@@ -15,11 +16,9 @@ export default function AccountDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
 
-  const account = useLiveQuery(
-    () => (id ? db.accounts.get(id) : undefined),
-    [id]
-  )
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { byId: accsById } = useAccounts()
+  const account = id ? accsById.get(id) : undefined
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
 
   const [filterMonth, setFilterMonth] = useState(new Date())
   const [editing, setEditing] = useState(false)
@@ -96,7 +95,8 @@ export default function AccountDetailPage() {
       ? `删除此账户？该账户下有 ${txCount} 笔交易，删除后这些交易将保留但失去账户关联。`
       : '删除此账户？'
     if (!confirm(msg)) return
-    await db.accounts.delete(account.id)
+    await accountsApi.remove(account.id)
+    await refreshAccounts()
     navigate('/accounts')
   }
 
@@ -208,18 +208,20 @@ function EditAccountDialog({ account, onClose }: EditProps) {
 
   const handleSave = async () => {
     if (!name.trim()) return
-    await db.accounts.update(account.id, {
+    await accountsApi.update(account.id, {
       name: name.trim(),
       icon,
       colorHex,
       initialBalance: parseFloat(initialBalance) || 0
     })
+    await refreshAccounts()
     onClose()
   }
 
   const handleDelete = async () => {
     if (!confirm('删除此账户？相关交易将保留但失去账户关联。')) return
-    await db.accounts.delete(account.id)
+    await accountsApi.remove(account.id)
+    await refreshAccounts()
     onClose()
     navigate('/accounts')
   }
@@ -297,7 +299,7 @@ interface RechargeProps {
 }
 
 function RechargeDialog({ account, onClose }: RechargeProps) {
-  const allAccounts = useLiveQuery(() => db.accounts.toArray(), [], [] as Account[])
+  const { list: allAccounts = [] } = useAccounts()
 
   const sources = useMemo(
     () => allAccounts.filter(a => a.id !== account.id && a.type !== 'fixed'),
@@ -317,14 +319,12 @@ function RechargeDialog({ account, onClose }: RechargeProps) {
 
   const handleSave = async () => {
     if (!canSave || !sourceId) return
-    await db.transactions.add({
-      id: uid(),
+    await transactionsApi.create({
       amount,
       type: 'transfer',
       note: note.trim() || `${account.name} 充值`,
       date: toISODate(new Date()),
       time: `${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
-      createdAt: new Date().toISOString(),
       accountId: sourceId,
       toAccountId: account.id,
       sourceType: 'recharge'

@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
-import { db } from '../db/db'
 import type { Transaction, TransactionType } from '../db/models'
 import { filterByPeriod, parseISODate } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
 import { asCurrency } from '../utils/format'
+import { useQuery } from '../hooks/useQuery'
+import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
@@ -44,7 +44,7 @@ export default function TransactionsPage() {
   const [showFilter, setShowFilter] = useState(false)
   const [daySheet, setDaySheet] = useState<{ date: Date; items: Transaction[] } | null>(null)
 
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
+  const { data: allTransactions = [], reload } = useQuery(() => transactionsApi.list(), [])
 
   const periodTx = useMemo(
     () => filterByPeriod(allTransactions, period, date),
@@ -253,7 +253,8 @@ export default function TransactionsPage() {
                       onNavigate={() => navigate(`/transactions/${t.id}`)}
                       onDelete={async () => {
                         if (!confirm('删除此交易？')) return
-                        await db.transactions.delete(t.id)
+                        await transactionsApi.remove(t.id)
+                        reload()
                       }}
                     />
                   ))}

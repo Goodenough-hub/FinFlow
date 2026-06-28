@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
-import { db, uid } from '../db/db'
-import type { Budget, Category, Transaction } from '../db/models'
+import type { Budget, Category } from '../db/models'
 import { collectDescendantIds } from '../utils/category'
 import { asCurrency } from '../utils/format'
 import { monthYearString } from '../utils/date'
+import { useQuery } from '../hooks/useQuery'
+import { useCategories } from '../hooks/useLookup'
+import { budgetsApi, transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import './BudgetsPage.css'
 
@@ -19,17 +20,17 @@ export default function BudgetsPage() {
   const [ref, setRef] = useState<Date>(new Date())
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
 
-  const allBudgets = useLiveQuery(() => db.budgets.toArray(), [], [] as Budget[])
-  const allCategories = useLiveQuery(() => db.categories.toArray(), [], [] as Category[])
-  const allTransactions = useLiveQuery(() => db.transactions.toArray(), [], [] as Transaction[])
-
   const year = ref.getFullYear()
   const month = ref.getMonth() + 1
 
-  const monthBudgets = useMemo(
-    () => allBudgets.filter(b => b.year === year && b.month === month),
-    [allBudgets, year, month]
+  const { data: allBudgets = [], reload: reloadBudgets } = useQuery(
+    () => budgetsApi.list(year, month),
+    [year, month]
   )
+  const { list: allCategories = [] } = useCategories()
+  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
+
+  const monthBudgets = allBudgets
 
   const rows = useMemo(() => {
     return monthBudgets
@@ -156,6 +157,7 @@ export default function BudgetsPage() {
           month={month}
           excludeIds={monthBudgets.map(b => b.categoryId)}
           onClose={() => setDialog({ mode: 'closed' })}
+          onSaved={reloadBudgets}
         />
       )}
     </div>
@@ -213,23 +215,21 @@ interface DialogProps {
   month: number
   excludeIds: string[]
   onClose: () => void
+  onSaved: () => void
 }
 
-function BudgetDialog({ state, year, month, excludeIds, onClose }: DialogProps) {
+function BudgetDialog({ state, year, month, excludeIds, onClose, onSaved }: DialogProps) {
   const isEdit = state.mode === 'edit'
   const existing = isEdit ? state.budget : undefined
 
-  const availableCategories = useLiveQuery(
-    () => db.categories.where('type').equals('expense').toArray(),
-    [],
-    [] as Category[]
-  )
+  const { list: availableCategories = [] } = useCategories()
 
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '')
   const [amountText, setAmountText] = useState(existing ? String(existing.amount) : '')
 
   const options = useMemo(() => {
     return availableCategories
+      .filter(c => c.type === 'expense')
       .filter(c => !excludeIds.includes(c.id) || c.id === existing?.categoryId)
       .sort((a, b) => a.sortOrder - b.sortOrder)
   }, [availableCategories, excludeIds, existing])
@@ -240,23 +240,25 @@ function BudgetDialog({ state, year, month, excludeIds, onClose }: DialogProps) 
   const handleSave = async () => {
     if (!canSave) return
     if (existing) {
-      await db.budgets.update(existing.id, { amount })
+      await budgetsApi.upsert({ ...existing, amount })
     } else {
-      await db.budgets.add({
-        id: uid(),
+      await budgetsApi.upsert({
+        id: '',
         amount,
         month,
         year,
         categoryId
       })
     }
+    onSaved()
     onClose()
   }
 
   const handleDelete = async () => {
     if (!existing) return
     if (!confirm('删除此预算？')) return
-    await db.budgets.delete(existing.id)
+    await budgetsApi.remove(existing.id)
+    onSaved()
     onClose()
   }
 
