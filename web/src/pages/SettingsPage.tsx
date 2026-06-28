@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Account, Category, Transaction } from '../db/models'
+import { useAuth } from '../contexts/AuthContext'
 import { usePWA } from '../hooks/usePWA'
 import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../theme'
 import { useQuery } from '../hooks/useQuery'
-import { useCategories, useAccounts, refreshAllLookups } from '../hooks/useLookup'
+import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
+import { asCurrency } from '../utils/format'
 import './SettingsPage.css'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const { canInstall, installed, offline, install } = usePWA()
   const { data: txs = [] } = useQuery(() => transactionsApi.list(), [])
   const { list: cats = [] } = useCategories()
@@ -18,12 +21,38 @@ export default function SettingsPage() {
   const { mode: theme, setThemeMode } = useTheme()
   const [busy, setBusy] = useState(false)
 
+  const balances = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const a of accs) map.set(a.id, a.initialBalance)
+    for (const t of txs) {
+      if (t.type === 'transfer') {
+        if (t.accountId) map.set(t.accountId, (map.get(t.accountId) ?? 0) - t.amount)
+        if (t.toAccountId) map.set(t.toAccountId, (map.get(t.toAccountId) ?? 0) + t.amount)
+      } else {
+        if (!t.accountId) continue
+        const cur = map.get(t.accountId) ?? 0
+        if (t.type === 'income') map.set(t.accountId, cur + t.amount)
+        else if (t.type === 'expense') map.set(t.accountId, cur - t.amount)
+      }
+    }
+    return map
+  }, [accs, txs])
+
+  const totalAssets = useMemo(
+    () => accs.reduce((s, a) => s + (balances.get(a.id) ?? 0), 0),
+    [accs, balances]
+  )
+
   const txCount = txs.length
   const catCount = cats.length
   const accCount = accs.length
 
-  const handleThemeChange = (mode: ThemeMode) => {
-    setThemeMode(mode)
+  const handleThemeChange = (mode: ThemeMode) => setThemeMode(mode)
+
+  const handleLogout = () => {
+    if (!confirm('确定退出登录？')) return
+    logout()
+    navigate('/login', { replace: true })
   }
 
   const handleFillSample = async () => {
@@ -108,11 +137,58 @@ export default function SettingsPage() {
     }
   }
 
+  const avatarLetter = (user?.username ?? '?').charAt(0).toUpperCase()
+
   return (
     <div className="page settings-page">
       <header className="page-header">
         <h1>设置</h1>
       </header>
+
+      <section className="profile-card" onClick={() => navigate('/accounts')}>
+        <div className="profile-avatar" style={{
+          background: `linear-gradient(135deg, ${avatarColor(user?.username ?? '')}, ${avatarColor(user?.username ?? '', true)})`
+        }}>
+          {avatarLetter}
+        </div>
+        <div className="profile-info">
+          <div className="profile-name">{user?.username ?? '未登录'}</div>
+          <div className="profile-meta">
+            <span className="profile-role">{user?.role === 'admin' ? '管理员' : '用户'}</span>
+            <span className="profile-sep">·</span>
+            <span>总资产 {asCurrency(totalAssets)}</span>
+          </div>
+        </div>
+        <span className="profile-chevron">›</span>
+      </section>
+
+      <section className="settings-group">
+        <div className="group-title">账户</div>
+        <div className="card group-card">
+          {accs.length === 0 && (
+            <div className="stat-row" style={{ justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+              暂无账户
+            </div>
+          )}
+          {accs.map(a => (
+            <button
+              key={a.id}
+              className="action-row"
+              onClick={() => navigate(`/accounts/${a.id}`)}
+            >
+              <span
+                className="account-dot"
+                style={{ background: a.colorHex || 'var(--accent-blue)' }}
+              >
+                {a.icon}
+              </span>
+              <span className="action-label">{a.name}</span>
+              <span className="action-value">{asCurrency(balances.get(a.id) ?? 0)}</span>
+              <span className="action-chevron">›</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="settings-group">
         <div className="group-title">外观</div>
@@ -137,6 +213,7 @@ export default function SettingsPage() {
           <button className="action-row" onClick={() => navigate('/categories')}>
             <span className="action-icon">🗂</span>
             <span className="action-label">分类管理</span>
+            <span className="action-value">{catCount}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" onClick={() => navigate('/budgets')}>
@@ -185,12 +262,12 @@ export default function SettingsPage() {
           </button>
           <button className="action-row" disabled={busy} onClick={handleExportCSV}>
             <span className="action-icon">📄</span>
-            <span className="action-label">导出 CSV</span>
+            <span className="action-label">{busy ? '处理中…' : '导出 CSV'}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" disabled={busy} onClick={handleExportJSON}>
             <span className="action-icon">💾</span>
-            <span className="action-label">导出 JSON 备份</span>
+            <span className="action-label">{busy ? '处理中…' : '导出 JSON 备份'}</span>
             <span className="action-chevron">›</span>
           </button>
           <label className="action-row" htmlFor="json-import-input">
@@ -271,8 +348,28 @@ export default function SettingsPage() {
           </div>
         </div>
       </section>
+
+      <div className="logout-section">
+        <button className="logout-btn" onClick={handleLogout}>退出登录</button>
+      </div>
     </div>
   )
+}
+
+function avatarColor(seed: string, alt = false): string {
+  const colors = [
+    ['#007AFF', '#00C6FF'],
+    ['#5856D6', '#AF52DE'],
+    ['#34C759', '#30D158'],
+    ['#FF9500', '#FF6B00'],
+    ['#FF3B30', '#FF2D55'],
+    ['#AF52DE', '#FF375F'],
+    ['#5AC8FA', '#007AFF']
+  ]
+  let h = 0
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  const pair = colors[h % colors.length]
+  return alt ? pair[1] : pair[0]
 }
 
 function stripId<T extends Record<string, any>>(obj: T): Omit<T, 'id'> {

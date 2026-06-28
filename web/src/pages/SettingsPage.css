@@ -6,6 +6,123 @@
   margin-bottom: 20px;
 }
 
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 14px;
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft, transparent);
+  border-radius: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.profile-card:active {
+  transform: scale(0.99);
+  background: var(--bg-card-elevated);
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+
+.profile-meta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-role {
+  padding: 1px 8px;
+  border-radius: 980px;
+  background: var(--bg-card-elevated);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.profile-sep {
+  opacity: 0.5;
+}
+
+.profile-chevron {
+  color: var(--text-tertiary);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.account-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.action-value {
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+
+.logout-section {
+  margin: 24px 0 8px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-card);
+  border: none;
+  border-radius: 14px;
+  color: var(--overspend-red);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.logout-btn:active {
+  transform: scale(0.99);
+  background: var(--bg-card-elevated);
+}
+
 .group-title {
   font-size: 12px;
   font-weight: 600;
