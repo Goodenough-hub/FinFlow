@@ -23,7 +23,7 @@ export function useQuery<T>(fetcher: () => Promise<T>, deps: any[] = []): QueryS
     fetcherRef.current()
       .then(d => {
         if (!cancelled) {
-          setData(d)
+          setData(d === null ? undefined as T : d)
           setError(null)
         }
       })
