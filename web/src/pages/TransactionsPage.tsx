@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Transaction, TransactionType } from '../db/models'
 import { filterByPeriod, parseISODate } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
+import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { asCurrency } from '../utils/format'
 import { useQuery } from '../hooks/useQuery'
 import { transactionsApi } from '../api/finflow'
@@ -100,7 +101,7 @@ export default function TransactionsPage() {
     const list = Array.from(map.values())
     list.sort((a, b) => b.date.localeCompare(a.date))
     for (const g of list) {
-      g.transactions.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      g.transactions.sort(compareTransactionsByDateTimeDesc)
     }
     return list
   }, [filtered])

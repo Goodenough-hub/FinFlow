@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { asCurrency } from '../utils/format'
 import { parseISODate } from '../utils/date'
+import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
 import { useCategories, useAccounts } from '../hooks/useLookup'
 import { transactionsApi } from '../api/finflow'
@@ -55,7 +56,7 @@ export default function SearchPage() {
         if (amt.includes(k)) return true
         return false
       })
-      .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
+      .sort(compareTransactionsByDateTimeDesc)
       .map(t => ({ tx: t, cat: t.categoryId ? catMap.get(t.categoryId) : undefined, acc: t.accountId ? accMap.get(t.accountId) : undefined }))
   }, [debounced, allTransactions, allCategories, allAccounts])
 

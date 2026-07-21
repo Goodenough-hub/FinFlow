@@ -5,6 +5,7 @@ import { accountTypeLabel } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate } from '../utils/date'
 import { getLeafAccounts } from '../utils/account'
+import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
@@ -94,7 +95,7 @@ export default function AccountDetailPage() {
     const prefix = `${y}-${String(m).padStart(2, '0')}-`
     return accountTransactions
       .filter(t => t.date.startsWith(prefix))
-      .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
+      .sort(compareTransactionsByDateTimeDesc)
   }, [accountTransactions, filterMonth])
 
   const { monthInflow, monthOutflow } = useMemo(() => {

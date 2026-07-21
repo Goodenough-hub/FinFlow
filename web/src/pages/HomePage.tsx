@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { TransactionType } from '../db/models'
 import { filterByPeriod } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
+import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
 import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
@@ -40,7 +41,7 @@ export default function HomePage() {
   }, [filtered])
 
   const recent = useMemo(
-    () => [...allTransactions].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 5),
+    () => [...allTransactions].sort(compareTransactionsByDateTimeDesc).slice(0, 5),
     [allTransactions]
   )
 

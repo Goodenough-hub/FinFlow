@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Transaction } from '../db/models'
 import { formatCompact } from '../utils/format'
 import { toISODate, parseISODate } from '../utils/date'
+import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import TransactionRow from './TransactionRow'
 import './CalendarView.css'
 
@@ -130,9 +131,7 @@ interface DaySheetProps {
 export function DailyTransactionSheet({ date, transactions, onClose }: DaySheetProps) {
   const navigate = useNavigate()
   const sorted = useMemo(
-    () => [...transactions].sort((a, b) =>
-      (b.time ?? '').localeCompare(a.time ?? '') || b.createdAt.localeCompare(a.createdAt)
-    ),
+    () => [...transactions].sort(compareTransactionsByDateTimeDesc),
     [transactions]
   )
   const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
