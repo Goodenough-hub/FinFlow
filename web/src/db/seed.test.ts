@@ -1,5 +1,36 @@
 import { describe, it, expect } from 'vitest'
-import { incomeTree } from './seed'
+import { incomeTree, expenseTree } from './seed'
+
+describe('expenseTree', () => {
+  const dining = expenseTree.find(n => n.name === '餐饮')
+  const subs = dining?.children ?? []
+
+  it('餐饮包含「夜宵」「小吃」「饮料」', () => {
+    const names = subs.map(c => c.name)
+    expect(names).toContain('夜宵')
+    expect(names).toContain('小吃')
+    expect(names).toContain('饮料')
+  })
+
+  it('夜宵、小吃、饮料位于晚餐之后且顺序为 晚餐→夜宵→小吃→饮料', () => {
+    const idx = new Map(subs.map((c, i) => [c.name, i]))
+    const d = idx.get('晚餐')!
+    const ln = idx.get('夜宵')!
+    const sn = idx.get('小吃')!
+    const dr = idx.get('饮料')!
+    expect(d).toBeLessThan(ln)
+    expect(ln).toBeLessThan(sn)
+    expect(sn).toBeLessThan(dr)
+  })
+
+  it('夜宵、小吃、饮料 sort_order 紧跟晚餐', () => {
+    const byName = new Map(subs.map(c => [c.name, c]))
+    const d = byName.get('晚餐')!
+    expect(byName.get('夜宵')!.order).toBe(d.order + 1)
+    expect(byName.get('小吃')!.order).toBe(d.order + 2)
+    expect(byName.get('饮料')!.order).toBe(d.order + 3)
+  })
+})
 
 describe('incomeTree', () => {
   it('投资分类包含 4 个理财收益子分类', () => {

@@ -10,14 +10,17 @@ interface SeedNode {
   children?: SeedNode[]
 }
 
-const expenseTree: SeedNode[] = [
+export const expenseTree: SeedNode[] = [
   { name: '餐饮', icon: '🍴', color: '#FF6B35', order: 0, children: [
     { name: '早餐', icon: '🥐', color: '#FF6B35', order: 100 },
     { name: '午餐', icon: '🍱', color: '#F59E0B', order: 101 },
     { name: '晚餐', icon: '🍽️', color: '#EF4444', order: 102 },
-    { name: '聚餐AA', icon: '👥', color: '#8B5CF6', order: 103 },
-    { name: '聚餐请客', icon: '❤️', color: '#EC4899', order: 104 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 105 }
+    { name: '夜宵', icon: '🌙', color: '#6366F1', order: 103 },
+    { name: '小吃', icon: '🍡', color: '#8B5CF6', order: 104 },
+    { name: '饮料', icon: '🥤', color: '#06B6D4', order: 105 },
+    { name: '聚餐AA', icon: '👥', color: '#8B5CF6', order: 106 },
+    { name: '聚餐请客', icon: '❤️', color: '#EC4899', order: 107 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 108 }
   ]},
   { name: '交通', icon: '🚗', color: '#3B82F6', order: 1, children: [
     { name: '地铁', icon: '🚇', color: '#3B82F6', order: 100 },
