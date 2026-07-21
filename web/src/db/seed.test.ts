@@ -3,17 +3,17 @@ import { incomeTree, expenseTree } from './seed'
 
 describe('expenseTree', () => {
   const dining = expenseTree.find(n => n.name === '餐饮')
-  const subs = dining?.children ?? []
+  const diningSubs = dining?.children ?? []
 
   it('餐饮包含「夜宵」「小吃」「饮料」', () => {
-    const names = subs.map(c => c.name)
+    const names = diningSubs.map(c => c.name)
     expect(names).toContain('夜宵')
     expect(names).toContain('小吃')
     expect(names).toContain('饮料')
   })
 
   it('夜宵、小吃、饮料位于晚餐之后且顺序为 晚餐→夜宵→小吃→饮料', () => {
-    const idx = new Map(subs.map((c, i) => [c.name, i]))
+    const idx = new Map(diningSubs.map((c, i) => [c.name, i]))
     const d = idx.get('晚餐')!
     const ln = idx.get('夜宵')!
     const sn = idx.get('小吃')!
@@ -24,11 +24,29 @@ describe('expenseTree', () => {
   })
 
   it('夜宵、小吃、饮料 sort_order 紧跟晚餐', () => {
-    const byName = new Map(subs.map(c => [c.name, c]))
+    const byName = new Map(diningSubs.map(c => [c.name, c]))
     const d = byName.get('晚餐')!
     expect(byName.get('夜宵')!.order).toBe(d.order + 1)
     expect(byName.get('小吃')!.order).toBe(d.order + 2)
     expect(byName.get('饮料')!.order).toBe(d.order + 3)
+  })
+
+  const transport = expenseTree.find(n => n.name === '交通')
+  const transportSubs = transport?.children ?? []
+
+  it('交通包含「高铁」且位于打车之后、其他之前', () => {
+    const idx = new Map(transportSubs.map((c, i) => [c.name, i]))
+    expect(idx.get('高铁')).toBeDefined()
+    const taxi = idx.get('打车')!
+    const hsr = idx.get('高铁')!
+    const other = idx.get('其他')!
+    expect(taxi).toBeLessThan(hsr)
+    expect(hsr).toBeLessThan(other)
+  })
+
+  it('高铁 sort_order 紧跟打车', () => {
+    const byName = new Map(transportSubs.map(c => [c.name, c]))
+    expect(byName.get('高铁')!.order).toBe(byName.get('打车')!.order + 1)
   })
 })
 

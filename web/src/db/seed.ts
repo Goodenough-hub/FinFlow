@@ -26,7 +26,8 @@ export const expenseTree: SeedNode[] = [
     { name: '地铁', icon: '🚇', color: '#3B82F6', order: 100 },
     { name: '公交', icon: '🚌', color: '#10B981', order: 101 },
     { name: '打车', icon: '🚕', color: '#F59E0B', order: 102 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 103 }
+    { name: '高铁', icon: '🚄', color: '#6366F1', order: 103 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 104 }
   ]},
   { name: '购物', icon: '🛍️', color: '#8B5CF6', order: 2, children: [
     { name: '京东', icon: '📦', color: '#EF4444', order: 100 },
