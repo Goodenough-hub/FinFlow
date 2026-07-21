@@ -9,7 +9,11 @@ import CategoryIcon from '../components/CategoryIcon'
 import AccountIcon from '../components/AccountIcon'
 import './TransactionFormPage.css'
 
-const VENDORS = ['高德', '滴滴', '美团', 'T3出行', '曹操出行', '其他']
+// 按分类名弹出对应「平台」选择器（打车 App / 外卖平台）
+const VENDOR_PICKERS: Record<string, { label: string; options: string[] }> = {
+  '打车': { label: '打车 App', options: ['高德', '滴滴', '美团', 'T3出行', '曹操出行', '其他'] },
+  '外卖': { label: '外卖平台', options: ['美团', '淘宝闪购', '京东外卖', '其他'] }
+}
 
 export default function TransactionFormPage() {
   const navigate = useNavigate()
@@ -115,7 +119,8 @@ export default function TransactionFormPage() {
     () => allCategories.find(c => c.id === selectedCategoryId),
     [allCategories, selectedCategoryId]
   )
-  const showVendorPicker = selectedCategory?.name === '打车'
+  const vendorPicker = selectedCategory ? VENDOR_PICKERS[selectedCategory.name] : undefined
+  const showVendorPicker = Boolean(vendorPicker)
 
   const isSavable = useMemo(() => {
     const v = parseFloat(amountText.replace(',', '.'))
@@ -149,6 +154,8 @@ export default function TransactionFormPage() {
         return next
       })
     } else {
+      // 切换到不同叶子分类时清空平台选择，避免残留（如从打车切到外卖仍留着「高德」）
+      if (cat.id !== selectedCategoryId) setVendor('')
       setSelectedCategoryId(cat.id)
     }
   }
@@ -281,11 +288,11 @@ export default function TransactionFormPage() {
                 })}
               </div>
             )}
-            {showVendorPicker && (
+            {vendorPicker && (
               <div className="vendor-picker">
-                <div className="section-label" style={{ marginTop: 12 }}>打车 App</div>
+                <div className="section-label" style={{ marginTop: 12 }}>{vendorPicker.label}</div>
                 <div className="vendor-grid">
-                  {VENDORS.map(v => (
+                  {vendorPicker.options.map(v => (
                     <button
                       key={v}
                       className={vendor === v ? 'active' : ''}

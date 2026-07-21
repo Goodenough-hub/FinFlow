@@ -18,9 +18,10 @@ export const expenseTree: SeedNode[] = [
     { name: '夜宵', icon: '🌙', color: '#6366F1', order: 103 },
     { name: '小吃', icon: '🍡', color: '#8B5CF6', order: 104 },
     { name: '饮料', icon: '🥤', color: '#06B6D4', order: 105 },
-    { name: '聚餐AA', icon: '👥', color: '#8B5CF6', order: 106 },
-    { name: '聚餐请客', icon: '❤️', color: '#EC4899', order: 107 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 108 }
+    { name: '外卖', icon: '🛵', color: '#F97316', order: 106 },
+    { name: '聚餐AA', icon: '👥', color: '#8B5CF6', order: 107 },
+    { name: '聚餐请客', icon: '❤️', color: '#EC4899', order: 108 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 109 }
   ]},
   { name: '交通', icon: '🚗', color: '#3B82F6', order: 1, children: [
     { name: '地铁', icon: '🚇', color: '#3B82F6', order: 100 },
@@ -34,7 +35,8 @@ export const expenseTree: SeedNode[] = [
     { name: '淘宝', icon: '🛍️', color: '#F59E0B', order: 101 },
     { name: '拼多多', icon: '🛒', color: '#EF4444', order: 102 },
     { name: '抖音', icon: '🎵', color: '#6B7280', order: 103 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 104 }
+    { name: '外卖', icon: '🛵', color: '#F97316', order: 104 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 105 }
   ]},
   { name: '住房', icon: '🏠', color: '#10B981', order: 3, children: [
     { name: '租金', icon: '🔑', color: '#10B981', order: 100 },

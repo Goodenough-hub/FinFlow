@@ -66,6 +66,26 @@ describe('expenseTree', () => {
     const byName = new Map(filmSubs.map(c => [c.name, c]))
     expect(byName.get('影院')!.order).toBe(byName.get('爱奇艺')!.order + 1)
   })
+
+  it('餐饮包含「外卖」，位于饮料之后、聚餐AA之前', () => {
+    const idx = new Map(diningSubs.map((c, i) => [c.name, i]))
+    expect(idx.get('外卖')).toBeDefined()
+    expect(idx.get('饮料')!).toBeLessThan(idx.get('外卖')!)
+    expect(idx.get('外卖')!).toBeLessThan(idx.get('聚餐AA')!)
+    const byName = new Map(diningSubs.map(c => [c.name, c]))
+    expect(byName.get('外卖')!.order).toBe(byName.get('饮料')!.order + 1)
+  })
+
+  it('购物包含「外卖」，位于抖音之后、其他之前', () => {
+    const shopping = expenseTree.find(n => n.name === '购物')
+    const shoppingSubs = shopping?.children ?? []
+    const idx = new Map(shoppingSubs.map((c, i) => [c.name, i]))
+    expect(idx.get('外卖')).toBeDefined()
+    expect(idx.get('抖音')!).toBeLessThan(idx.get('外卖')!)
+    expect(idx.get('外卖')!).toBeLessThan(idx.get('其他')!)
+    const byName = new Map(shoppingSubs.map(c => [c.name, c]))
+    expect(byName.get('外卖')!.order).toBe(byName.get('抖音')!.order + 1)
+  })
 })
 
 describe('incomeTree', () => {
