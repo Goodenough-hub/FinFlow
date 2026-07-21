@@ -8,7 +8,7 @@ import type { ThemeMode } from '../theme'
 import { useQuery } from '../hooks/useQuery'
 import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
-import { getLeafAccounts } from '../utils/account'
+import { getLeafAccounts, getChildrenMap } from '../utils/account'
 import { asCurrency } from '../utils/format'
 import AvatarPicker from '../components/AvatarPicker'
 import './SettingsPage.css'
@@ -23,6 +23,8 @@ export default function SettingsPage() {
   const { mode: theme, setThemeMode } = useTheme()
   const [busy, setBusy] = useState(false)
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
+
+  const childrenMap = useMemo(() => getChildrenMap(accs), [accs])
 
   const balances = useMemo(() => {
     const map = new Map<string, number>()
@@ -230,7 +232,16 @@ export default function SettingsPage() {
                 {a.icon}
               </span>
               <span className="action-label">{a.name}</span>
-              <span className="action-value">{asCurrency(balances.get(a.id) ?? 0)}</span>
+              <span className="action-value">
+                {asCurrency(
+                  (childrenMap.get(a.id) ?? []).length > 0
+                    ? (childrenMap.get(a.id) ?? []).reduce(
+                        (s, k) => s + (balances.get(k.id) ?? 0),
+                        0
+                      )
+                    : (balances.get(a.id) ?? 0)
+                )}
+              </span>
               <span className="action-chevron">›</span>
             </button>
           ))}
