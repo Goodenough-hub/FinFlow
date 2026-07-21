@@ -54,7 +54,8 @@ export const expenseTree: SeedNode[] = [
       { name: '腾讯视频', icon: '📺', color: '#10B981', order: 301 },
       { name: 'B站', icon: '▶️', color: '#EF4444', order: 302 },
       { name: '爱奇艺', icon: '🎬', color: '#10B981', order: 303 },
-      { name: '其他', icon: '⋯', color: '#6B7280', order: 304 }
+      { name: '影院', icon: '🎟️', color: '#F59E0B', order: 304 },
+      { name: '其他', icon: '⋯', color: '#6B7280', order: 305 }
     ]},
     { name: '音乐', icon: '🎵', color: '#06B6D4', order: 300, children: [
       { name: 'Apple Music', icon: '🎵', color: '#EF4444', order: 401 },

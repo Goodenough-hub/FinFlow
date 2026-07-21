@@ -48,6 +48,24 @@ describe('expenseTree', () => {
     const byName = new Map(transportSubs.map(c => [c.name, c]))
     expect(byName.get('高铁')!.order).toBe(byName.get('打车')!.order + 1)
   })
+
+  const film = expenseTree.find(n => n.name === '娱乐')?.children?.find(n => n.name === '影视')
+  const filmSubs = film?.children ?? []
+
+  it('影视包含「影院」且位于爱奇艺之后、其他之前', () => {
+    const idx = new Map(filmSubs.map((c, i) => [c.name, i]))
+    expect(idx.get('影院')).toBeDefined()
+    const iqiyi = idx.get('爱奇艺')!
+    const cinema = idx.get('影院')!
+    const other = idx.get('其他')!
+    expect(iqiyi).toBeLessThan(cinema)
+    expect(cinema).toBeLessThan(other)
+  })
+
+  it('影院 sort_order 紧跟爱奇艺', () => {
+    const byName = new Map(filmSubs.map(c => [c.name, c]))
+    expect(byName.get('影院')!.order).toBe(byName.get('爱奇艺')!.order + 1)
+  })
 })
 
 describe('incomeTree', () => {
