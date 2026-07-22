@@ -12,6 +12,9 @@ import SearchPage from './pages/SearchPage'
 import ReportsPage from './pages/ReportsPage'
 import ImportPage from './pages/ImportPage'
 import TransactionFormPage from './pages/TransactionFormPage'
+import TripListPage from './pages/TripListPage'
+import TripReportPage from './pages/TripReportPage'
+import TripSpendPage from './pages/TripSpendPage'
 import LoginPage from './pages/LoginPage'
 import PWAToasts from './components/PWAToasts'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -35,6 +38,9 @@ export default function App() {
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/budgets" element={<BudgetsPage />} />
           <Route path="/recurring" element={<RecurringPage />} />
+          <Route path="/trips" element={<TripListPage />} />
+          <Route path="/trips/:id" element={<TripReportPage />} />
+          <Route path="/trips/:id/spend" element={<TripSpendPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/import" element={<ImportPage />} />

@@ -16,6 +16,7 @@ import TransactionFilterSheet, {
   activeCount,
   type FilterCriteria
 } from '../components/TransactionFilterSheet'
+import TripPickerDialog from '../components/TripPickerDialog'
 import './TransactionsPage.css'
 
 type TypeFilter = 'all' | TransactionType
@@ -43,6 +44,7 @@ export default function TransactionsPage() {
   const [keyword, setKeyword] = useState('')
   const [criteria, setCriteria] = useState<FilterCriteria>(emptyCriteria())
   const [showFilter, setShowFilter] = useState(false)
+  const [showTripPicker, setShowTripPicker] = useState(false)
   const [daySheet, setDaySheet] = useState<{ date: Date; items: Transaction[] } | null>(null)
 
   const { data: allTransactions = [], reload } = useQuery(() => transactionsApi.list(), [])
@@ -151,6 +153,11 @@ export default function TransactionsPage() {
               <span className="filter-badge">{activeCount(criteria)}</span>
             )}
           </button>
+          <button
+            className="header-icon"
+            onClick={() => setShowTripPicker(true)}
+            aria-label="旅游记账"
+          >✈️</button>
           <button className="header-icon" onClick={() => navigate('/search')} aria-label="搜索">🔍</button>
         </div>
       </header>
@@ -195,6 +202,16 @@ export default function TransactionsPage() {
           criteria={criteria}
           onApply={setCriteria}
           onClose={() => setShowFilter(false)}
+        />
+      )}
+
+      {showTripPicker && (
+        <TripPickerDialog
+          onClose={() => setShowTripPicker(false)}
+          onPick={(tripId) => {
+            setShowTripPicker(false)
+            navigate(`/trips/${tripId}/spend`)
+          }}
         />
       )}
 

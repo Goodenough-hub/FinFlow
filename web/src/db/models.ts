@@ -16,6 +16,7 @@ export interface Transaction {
   sourceId?: string
   sourceType?: string
   vendor?: string
+  tripId?: string
 }
 
 export interface Category {
@@ -27,6 +28,18 @@ export interface Category {
   sortOrder: number
   isSystem: boolean
   parentId?: string
+  /** 'normal'（主分类树）| 'trip'（旅游专属，不进主树，进总账时独立显示） */
+  scope?: string
+}
+
+export interface Trip {
+  id: string
+  name: string
+  startDate?: string
+  endDate?: string
+  budget: number
+  note: string
+  createdAt: string
 }
 
 export interface Account {

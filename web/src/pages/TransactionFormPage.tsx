@@ -39,6 +39,7 @@ export default function TransactionFormPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>()
   const [toAccountId, setToAccountId] = useState<string | undefined>()
   const [vendor, setVendor] = useState<string>('')
+  const [tripId, setTripId] = useState<string | undefined>()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function TransactionFormPage() {
     setSelectedAccountId(existing.accountId)
     setToAccountId(existing.toAccountId)
     setVendor(existing.vendor ?? '')
+    setTripId(existing.tripId)
   }, [existing])
 
   useEffect(() => {
@@ -104,7 +106,7 @@ export default function TransactionFormPage() {
     const result: Array<{ cat: Category; depth: number }> = []
     const visit = (parentId: string | undefined, depth: number) => {
       const cats = allCategories
-        .filter(c => c.type === catType && c.parentId === parentId)
+        .filter(c => c.type === catType && c.parentId === parentId && c.scope !== 'trip')
         .sort((a, b) => a.sortOrder - b.sortOrder)
       for (const cat of cats) {
         result.push({ cat, depth })
@@ -175,7 +177,8 @@ export default function TransactionFormPage() {
         accountId: selectedAccountId,
         toAccountId,
         categoryId: undefined,
-        vendor: undefined
+        vendor: undefined,
+        tripId
       }
       if (existing) {
         await transactionsApi.update(existing.id, payload)
@@ -197,7 +200,8 @@ export default function TransactionFormPage() {
       categoryId: selectedCategoryId,
       accountId: selectedAccountId,
       toAccountId: undefined,
-      vendor: vendorValue
+      vendor: vendorValue,
+      tripId
     }
     if (existing) {
       await transactionsApi.update(existing.id, payload)

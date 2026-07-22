@@ -101,7 +101,9 @@
 .fab {
   position: fixed;
   right: 24px;
-  bottom: calc(96px + env(safe-area-inset-bottom));
+  /* 统计栏 tx-summary-bar 是 fixed，手机端约从 72px 向上 ~60px。
+     把 FAB 抬到统计栏之上，避免压住最右侧的「笔数」。 */
+  bottom: calc(148px + env(safe-area-inset-bottom));
   width: 56px;
   height: 56px;
   border-radius: 28px;
@@ -122,7 +124,7 @@
 
 @media (min-width: 640px) {
   .fab {
-    bottom: 120px;
+    bottom: 168px;
     right: calc(50% - 320px + 24px);
   }
 }

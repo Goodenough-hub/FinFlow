@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { categoriesApi, accountsApi } from '../api/finflow'
-import type { Category, Account } from '../db/models'
+import { categoriesApi, accountsApi, tripsApi } from '../api/finflow'
+import type { Category, Account, Trip } from '../db/models'
 
 interface LookupState<T> {
   byId: Map<string, T>
@@ -10,12 +10,15 @@ interface LookupState<T> {
 
 let categoriesCache: LookupState<Category> = { byId: new Map(), list: [], loading: true }
 let accountsCache: LookupState<Account> = { byId: new Map(), list: [], loading: true }
+let tripsCache: LookupState<Trip> = { byId: new Map(), list: [], loading: true }
 
 const categoryListeners = new Set<() => void>()
 const accountListeners = new Set<() => void>()
+const tripListeners = new Set<() => void>()
 
 let categoriesPromise: Promise<void> | null = null
 let accountsPromise: Promise<void> | null = null
+let tripsPromise: Promise<void> | null = null
 
 function notify(set: Set<() => void>) {
   set.forEach(fn => fn())
@@ -102,6 +105,42 @@ export function refreshAccounts() {
   return loadAccounts()
 }
 
+async function loadTrips() {
+  if (tripsPromise) return tripsPromise
+  tripsPromise = (async () => {
+    try {
+      const list = await tripsApi.list()
+      const byId = new Map<string, Trip>()
+      for (const t of list) byId.set(t.id, t)
+      tripsCache = { byId, list, loading: false }
+    } catch (e) {
+      tripsCache = { byId: new Map(), list: [], loading: false }
+    } finally {
+      tripsPromise = null
+    }
+    notify(tripListeners)
+  })()
+  return tripsPromise
+}
+
+export function useTrips(): LookupState<Trip> {
+  const [, force] = useState(0)
+  useEffect(() => {
+    if ((tripsCache.loading || tripsCache.list.length === 0) && !tripsPromise) {
+      loadTrips()
+    }
+    const fn = () => force(x => x + 1)
+    tripListeners.add(fn)
+    return () => { tripListeners.delete(fn) }
+  }, [])
+  return tripsCache
+}
+
+export function refreshTrips() {
+  tripsCache = { byId: new Map(), list: [], loading: true }
+  return loadTrips()
+}
+
 export function refreshAllLookups() {
-  return Promise.all([refreshCategories(), refreshAccounts()])
+  return Promise.all([refreshCategories(), refreshAccounts(), refreshTrips()])
 }

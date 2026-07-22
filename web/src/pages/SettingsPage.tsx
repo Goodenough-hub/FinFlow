@@ -284,6 +284,11 @@ export default function SettingsPage() {
             <span className="action-label">周期性交易</span>
             <span className="action-chevron">›</span>
           </button>
+          <button className="action-row" onClick={() => navigate('/trips')}>
+            <span className="action-icon">✈️</span>
+            <span className="action-label">旅游账单</span>
+            <span className="action-chevron">›</span>
+          </button>
           <button className="action-row" onClick={() => navigate('/reports')}>
             <span className="action-icon">📊</span>
             <span className="action-label">报表中心</span>

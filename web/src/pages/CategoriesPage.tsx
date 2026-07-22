@@ -51,7 +51,7 @@ export default function CategoriesPage() {
     const result: Array<{ cat: Category; depth: number }> = []
     const visit = (parentId: string | undefined, depth: number) => {
       const cats = allCategories
-        .filter(c => c.type === activeType && c.parentId === parentId)
+        .filter(c => c.type === activeType && c.parentId === parentId && c.scope !== 'trip')
         .sort((a, b) => a.sortOrder - b.sortOrder)
       for (const cat of cats) {
         result.push({ cat, depth })
@@ -63,7 +63,7 @@ export default function CategoriesPage() {
   }, [allCategories, activeType, expandedIds])
 
   const rootCount = useMemo(
-    () => allCategories.filter(c => c.type === activeType && !c.parentId).length,
+    () => allCategories.filter(c => c.type === activeType && !c.parentId && c.scope !== 'trip').length,
     [allCategories, activeType]
   )
 
@@ -78,7 +78,7 @@ export default function CategoriesPage() {
 
   const handleMove = async (cat: Category, delta: -1 | 1) => {
     const siblings = allCategories
-      .filter(c => c.type === cat.type && c.parentId === cat.parentId)
+      .filter(c => c.type === cat.type && c.parentId === cat.parentId && c.scope !== 'trip')
       .sort((a, b) => a.sortOrder - b.sortOrder)
     const idx = siblings.findIndex(c => c.id === cat.id)
     const target = idx + delta
@@ -245,7 +245,7 @@ function CategoryDialog({ state, type, onClose, onDelete }: DialogProps) {
         colorHex
       })
     } else {
-      const siblings = allCategories.filter(c => c.type === type && c.parentId === parentId)
+      const siblings = allCategories.filter(c => c.type === type && c.parentId === parentId && c.scope !== 'trip')
       const maxOrder = siblings.reduce((m, c) => Math.max(m, c.sortOrder), -1)
       await categoriesApi.create({
         name: name.trim(),

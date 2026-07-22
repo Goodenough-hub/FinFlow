@@ -4,7 +4,8 @@ import type {
   Category,
   Account,
   Budget,
-  RecurringTransaction
+  RecurringTransaction,
+  Trip
 } from '../db/models'
 
 export interface ListTxParams {
@@ -13,6 +14,7 @@ export interface ListTxParams {
   type?: string
   categoryId?: string
   accountId?: string
+  tripId?: string
   keyword?: string
   pageSize?: number
   offset?: number
@@ -115,6 +117,17 @@ export const recurringApi = {
     apiClient.delete(`/finflow/recurring/${id}`).then(r => r.data),
   process: () =>
     apiClient.post('/finflow/recurring/process').then(r => r.data)
+}
+
+export const tripsApi = {
+  list: () =>
+    apiClient.get<Trip[]>('/finflow/trips').then(r => r.data),
+  create: (t: Omit<Trip, 'id' | 'createdAt'>) =>
+    apiClient.post<Trip>('/finflow/trips', t).then(r => r.data),
+  update: (id: string, t: Partial<Trip>) =>
+    apiClient.put<Trip>(`/finflow/trips/${id}`, t).then(r => r.data),
+  remove: (id: string) =>
+    apiClient.delete(`/finflow/trips/${id}`).then(r => r.data)
 }
 
 export const statsApi = {

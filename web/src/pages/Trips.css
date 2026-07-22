@@ -1,0 +1,519 @@
+/* 旅游账单相关页面共用样式 */
+
+.trip-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.trip-header-row .trip-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.trip-header-row .trip-meta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.trip-summary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.trip-summary-cell {
+  text-align: center;
+}
+.trip-summary-cell .label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.trip-summary-cell .value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+.trip-summary-cell.expense .value { color: var(--expense-gold); }
+.trip-summary-cell.income .value { color: var(--income-green); }
+
+/* 旅游列表项 */
+.trip-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--divider);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+.trip-item:last-child { border-bottom: none; }
+.trip-item .trip-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  background: var(--accent-tint);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.trip-item .trip-info { flex: 1; min-width: 0; }
+.trip-item .trip-info .name {
+  font-size: 15px; font-weight: 500;
+}
+.trip-item .trip-info .sub {
+  font-size: 12px; color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.trip-item .trip-spend {
+  font-size: 15px; font-weight: 600;
+  color: var(--expense-gold);
+}
+.trip-item .trip-chevron { color: var(--text-tertiary); }
+
+/* 列表项 + 行内删除按钮（选择旅游弹窗，便于快速删除测试数据） */
+.trip-item-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--divider);
+}
+.trip-item-row:last-child { border-bottom: none; }
+.trip-item-row .trip-item {
+  flex: 1; min-width: 0;
+  border-bottom: none;
+}
+.trip-item-del {
+  flex: 0 0 auto;
+  width: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--divider);
+  color: var(--text-tertiary);
+  font-size: 17px;
+  cursor: pointer;
+}
+.trip-item-del:active { color: var(--overspend-red); }
+.trip-item-del:disabled { opacity: 0.4; cursor: default; }
+
+/* 扁平分类/平台 chip 网格（复用 vendor-grid 风格） */
+.trip-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.trip-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--bg-card-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+.trip-chip .chip-icon { font-size: 22px; }
+.trip-chip.active {
+  border-color: var(--accent-blue);
+  background: var(--accent-tint);
+  color: var(--text-primary);
+}
+
+.trip-section-title {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 16px 0 4px;
+}
+
+/* 模态/底部弹层 */
+.trip-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: flex-end; justify-content: center;
+  /* 必须高于底部 tab-bar(100) 与 fab(99)，否则底部弹层的下半部分
+     （空态提示、「+ 新建旅游」按钮）会被 tab-bar 盖住。与其他模态一致取 200。 */
+  z-index: 200;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.trip-sheet {
+  width: 100%; max-width: 480px;
+  max-height: 85vh; overflow-y: auto;
+  min-height: 200px;
+  background: var(--bg-card);
+  border-radius: 20px 20px 0 0;
+  border: 1px solid var(--card-border);
+  padding: 16px 16px 24px;
+}
+.trip-sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.trip-sheet-head .title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 19px; font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.trip-sheet-head .close {
+  font-size: 18px; color: var(--text-tertiary);
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card-elevated); border: none; cursor: pointer;
+}
+
+.trip-field { margin-bottom: 16px; }
+.trip-field label {
+  display: block;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.trip-field input, .trip-field textarea {
+  width: 100%; box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--card-border);
+  background: var(--bg-card-elevated);
+  color: var(--text-primary);
+  /* 17px：≥16px 才能避免 iOS Safari 聚焦时自动放大整页 */
+  font-size: 17px;
+  line-height: 1.3;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.trip-field textarea { resize: none; }
+.trip-field input::placeholder, .trip-field textarea::placeholder {
+  color: var(--text-tertiary);
+}
+.trip-field input:focus, .trip-field textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 4px var(--accent-tint);
+}
+.trip-field-row { display: flex; gap: 10px; }
+.trip-field-row .trip-field { flex: 1; margin-bottom: 0; }
+
+/* 登机牌式「行程」：出发 →✈→ 返程，一体面板 */
+.trip-journey {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  padding: 14px 12px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: var(--bg-card-elevated);
+  border: 1px solid var(--card-border);
+}
+.trip-journey-field, .trip-journey-sep {
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+.trip-journey .cap {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  min-height: 14px;
+  text-align: center;
+}
+.trip-journey-field input[type="date"] {
+  width: 100%; box-sizing: border-box; min-width: 0;
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.trip-journey-field input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 4px var(--accent-tint);
+}
+.trip-journey-sep .plane {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent-blue);
+  font-size: 18px;
+}
+
+.trip-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: none;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px; font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+.trip-btn.secondary {
+  background: var(--bg-card-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+  box-shadow: none;
+}
+.trip-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+.trip-empty-hint {
+  text-align: center; color: var(--text-secondary);
+  padding: 32px 16px; font-size: 14px;
+  min-height: 60px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 报告占比条 */
+.trip-bar-row { margin: 10px 0; }
+.trip-bar-row .bar-head {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.trip-bar-track {
+  height: 8px; border-radius: 4px;
+  background: var(--bg-card-elevated);
+  overflow: hidden;
+}
+.trip-bar-fill { height: 100%; border-radius: 4px; }
+
+/* 支出/收入 分段（旅游记账页） */
+.type-segmented {
+  display: flex;
+  background: var(--bg-card-elevated);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+.type-segmented .seg-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.type-segmented .seg-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.type-segmented .seg-btn.expense.active { color: var(--expense-gold); }
+.type-segmented .seg-btn.income.active { color: var(--income-green); }
+
+/* ============ 旅游记账页（TripSpendPage）============ */
+.trip-spend {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg-primary);
+}
+.trip-spend-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+  flex-shrink: 0;
+}
+.trip-spend-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.trip-spend-title .tst-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.trip-spend-title .tst-meta { font-size: 12px; color: var(--text-tertiary); }
+
+.trip-spend-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 16px 16px;
+}
+
+.trip-cat-group { margin-top: 16px; }
+.trip-cat-group-title {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.trip-cat-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.trip-cat-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 4px;
+  border-radius: 14px;
+  border: 1.5px solid var(--card-border);
+  background: var(--bg-card-elevated);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.trip-cat-chip.active {
+  background: var(--accent-tint);
+  color: var(--text-primary);
+}
+
+.trip-spend-dock {
+  flex-shrink: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg-card);
+  border-top: 1px solid var(--card-border);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+}
+.trip-amount-row {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 4px 4px 12px;
+}
+.trip-amount-row .tar-cur {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px; color: var(--text-tertiary);
+}
+.trip-amount-row .tar-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 34px; font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.trip-amount-row .tar-value.placeholder { color: var(--text-tertiary); }
+
+.trip-note-input {
+  width: 100%; box-sizing: border-box;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--card-border);
+  background: var(--bg-card-elevated);
+  color: var(--text-primary);
+  font-size: 16px;
+}
+.trip-note-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 4px var(--accent-tint);
+}
+.trip-note-input::placeholder { color: var(--text-tertiary); }
+
+/* ============ 旅游报告页（TripReportPage）============ */
+.trip-hero { padding: 16px; }
+.trip-hero-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.trip-hero-plane {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: var(--accent-tint);
+  font-size: 22px;
+}
+.trip-hero-info { min-width: 0; }
+.trip-hero-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 700; color: var(--text-primary);
+}
+.trip-hero-meta { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+
+.trip-hero-spend {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 0 12px;
+}
+.trip-hero-spend .ths-label { font-size: 13px; color: var(--text-tertiary); }
+.trip-hero-spend .ths-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px; font-weight: 700;
+  color: var(--expense-gold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.trip-hero-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+}
+.trip-hero-stat { display: flex; flex-direction: column; gap: 4px; }
+.trip-hero-stat .label { font-size: 12px; color: var(--text-tertiary); }
+.trip-hero-stat .value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.trip-hero-stat .value.income { color: var(--income-green); }
+
+.trip-budget { margin-top: 16px; }
+.trip-budget-head {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.trip-budget-head .over { color: var(--overspend-red); font-weight: 600; }
+
+/* ============ 旅游列表页（TripListPage）卡片 ============ */
+.trip-card-list {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 4px 16px 16px;
+}
+.trip-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.trip-card:active { transform: scale(0.99); }
+.trip-card-top { display: flex; align-items: center; gap: 12px; }
+.trip-card-plane {
+  width: 42px; height: 42px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: var(--accent-tint);
+  font-size: 20px;
+}
+.trip-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.trip-card-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px; font-weight: 600; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.trip-card-dates { font-size: 12px; color: var(--text-tertiary); }
+.trip-card-edit {
+  flex: 0 0 auto;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card-elevated); border: none;
+  color: var(--text-tertiary); font-size: 18px; cursor: pointer;
+}
+.trip-card-spend {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-top: 12px;
+}
+.trip-card-spend .tcs-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.trip-card-spend .tcs-budget { font-size: 13px; color: var(--text-tertiary); }
+.trip-card .trip-bar-track { margin-top: 10px; }

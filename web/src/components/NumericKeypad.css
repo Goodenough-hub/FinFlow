@@ -1,0 +1,55 @@
+.keypad {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.keypad-key {
+  height: 56px;
+  border: none;
+  border-radius: 14px;
+  background: var(--bg-card-elevated);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.08s ease;
+}
+
+.keypad-key:active {
+  background: var(--accent-tint);
+  transform: scale(0.97);
+}
+
+.keypad-key-back {
+  color: var(--text-secondary);
+  font-size: 22px;
+}
+
+.keypad-submit {
+  height: 54px;
+  border: none;
+  border-radius: 14px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+
+.keypad-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
