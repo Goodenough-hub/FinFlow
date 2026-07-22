@@ -5,7 +5,6 @@ import { useTrips, refreshTrips, useCategories, useAccounts } from '../hooks/use
 import { transactionsApi } from '../api/finflow'
 import { getTripCategoryGroups, tripDateRangeText } from '../utils/trip'
 import CategoryIcon from '../components/CategoryIcon'
-import NumericKeypad from '../components/NumericKeypad'
 import './Trips.css'
 
 function todayISO(): string {
@@ -124,7 +123,15 @@ export default function TripSpendPage() {
       <div className="trip-spend-dock">
         <div className="trip-amount-row">
           <span className="tar-cur">¥</span>
-          <span className={`tar-value ${amount ? '' : 'placeholder'}`}>{amount || '0.00'}</span>
+          <input
+            className="tar-input"
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            autoFocus
+          />
         </div>
         <input
           className="trip-note-input"
@@ -132,13 +139,9 @@ export default function TripSpendPage() {
           onChange={e => setNote(e.target.value)}
           placeholder="备注（可选）"
         />
-        <NumericKeypad
-          value={amount}
-          onChange={setAmount}
-          onSubmit={handleSave}
-          submitLabel={busy ? '保存中…' : '保存'}
-          submitDisabled={!savable}
-        />
+        <button className="trip-btn" disabled={!savable} onClick={handleSave}>
+          {busy ? '保存中…' : '保存'}
+        </button>
       </div>
     </div>
   )

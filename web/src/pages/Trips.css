@@ -390,15 +390,21 @@
 .trip-amount-row .tar-cur {
   font-family: 'Outfit', sans-serif;
   font-size: 22px; color: var(--text-tertiary);
+  flex-shrink: 0;
 }
-.trip-amount-row .tar-value {
+.trip-amount-row .tar-input {
+  flex: 1; min-width: 0;
   font-family: 'Outfit', sans-serif;
   font-size: 34px; font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  caret-color: var(--accent-blue);
 }
-.trip-amount-row .tar-value.placeholder { color: var(--text-tertiary); }
+.trip-amount-row .tar-input::placeholder { color: var(--text-tertiary); }
 
 .trip-note-input {
   width: 100%; box-sizing: border-box;
