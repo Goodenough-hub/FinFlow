@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import type { TransactionType } from '../db/models'
 import { filterByPeriod } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
@@ -49,7 +50,7 @@ export default function HomePage() {
     <div className="page home-page">
       <header className="page-header">
         <h1>FinFlow</h1>
-        <button className="header-icon" onClick={() => navigate('/search')} aria-label="搜索">🔍</button>
+        <button className="header-icon" onClick={() => navigate('/search')} aria-label="搜索"><Search size={20} strokeWidth={2} /></button>
       </header>
 
       <PeriodPicker

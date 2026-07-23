@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FolderTree, Target, Repeat, Plane, BarChart3, Download, FileText, Database, Sparkles, Trash2, Smartphone } from 'lucide-react'
 import type { Account, Category, Transaction } from '../db/models'
 import { useAuth } from '../contexts/AuthContext'
 import { usePWA } from '../hooks/usePWA'
@@ -269,28 +270,28 @@ export default function SettingsPage() {
         <div className="group-title">管理</div>
         <div className="card group-card">
           <button className="action-row" onClick={() => navigate('/categories')}>
-            <span className="action-icon">🗂</span>
+            <span className="action-icon"><FolderTree size={20} strokeWidth={2} /></span>
             <span className="action-label">分类管理</span>
             <span className="action-value">{catCount}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" onClick={() => navigate('/budgets')}>
-            <span className="action-icon">🎯</span>
+            <span className="action-icon"><Target size={20} strokeWidth={2} /></span>
             <span className="action-label">预算管理</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" onClick={() => navigate('/recurring')}>
-            <span className="action-icon">🔁</span>
+            <span className="action-icon"><Repeat size={20} strokeWidth={2} /></span>
             <span className="action-label">周期性交易</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" onClick={() => navigate('/trips')}>
-            <span className="action-icon">✈️</span>
+            <span className="action-icon"><Plane size={20} strokeWidth={2} /></span>
             <span className="action-label">旅游账单</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" onClick={() => navigate('/reports')}>
-            <span className="action-icon">📊</span>
+            <span className="action-icon"><BarChart3 size={20} strokeWidth={2} /></span>
             <span className="action-label">报表中心</span>
             <span className="action-chevron">›</span>
           </button>
@@ -319,22 +320,22 @@ export default function SettingsPage() {
         <div className="group-title">导入 / 导出</div>
         <div className="card group-card">
           <button className="action-row" onClick={() => navigate('/import')}>
-            <span className="action-icon">📥</span>
+            <span className="action-icon"><Download size={20} strokeWidth={2} /></span>
             <span className="action-label">导入 CSV</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" disabled={busy} onClick={handleExportCSV}>
-            <span className="action-icon">📄</span>
+            <span className="action-icon"><FileText size={20} strokeWidth={2} /></span>
             <span className="action-label">{busy ? '处理中…' : '导出 CSV'}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row" disabled={busy} onClick={handleExportJSON}>
-            <span className="action-icon">💾</span>
+            <span className="action-icon"><Database size={20} strokeWidth={2} /></span>
             <span className="action-label">{busy ? '处理中…' : '导出 JSON 备份'}</span>
             <span className="action-chevron">›</span>
           </button>
           <label className="action-row" htmlFor="json-import-input">
-            <span className="action-icon">📥</span>
+            <span className="action-icon"><Download size={20} strokeWidth={2} /></span>
             <span className="action-label">{busy ? '处理中…' : '导入 JSON 备份'}</span>
             <span className="action-chevron">›</span>
             <input
@@ -357,17 +358,17 @@ export default function SettingsPage() {
         <div className="group-title">示例数据</div>
         <div className="card group-card">
           <button className="action-row" disabled={busy} onClick={handleFillSample}>
-            <span className="action-icon">✨</span>
+            <span className="action-icon"><Sparkles size={20} strokeWidth={2} /></span>
             <span className="action-label">{busy ? '处理中…' : '填充 2 年示例数据'}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row danger" disabled={busy} onClick={handleClearAll}>
-            <span className="action-icon">🗑</span>
+            <span className="action-icon"><Trash2 size={20} strokeWidth={2} /></span>
             <span className="action-label">{busy ? '处理中…' : '清空所有交易'}</span>
             <span className="action-chevron">›</span>
           </button>
           <button className="action-row danger" disabled={busy} onClick={handleClearAccounts}>
-            <span className="action-icon">🗑</span>
+            <span className="action-icon"><Trash2 size={20} strokeWidth={2} /></span>
             <span className="action-label">{busy ? '处理中…' : '清空所有账户（含关联交易）'}</span>
             <span className="action-chevron">›</span>
           </button>
@@ -389,7 +390,7 @@ export default function SettingsPage() {
           </div>
           {canInstall && !installed && (
             <button className="action-row" onClick={install}>
-              <span className="action-icon">📲</span>
+              <span className="action-icon"><Smartphone size={20} strokeWidth={2} /></span>
               <span className="action-label">安装到主屏幕</span>
               <span className="action-chevron">›</span>
             </button>

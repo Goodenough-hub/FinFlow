@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { asCurrency } from '../utils/format'
 import { parseISODate } from '../utils/date'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
@@ -102,7 +103,7 @@ export default function SearchPage() {
       <header className="search-header">
         <button className="search-back" onClick={() => navigate(-1)} aria-label="返回">‹</button>
         <form className="search-form" onSubmit={handleSubmit}>
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={18} strokeWidth={2} /></span>
           <input
             ref={inputRef}
             className="search-input"

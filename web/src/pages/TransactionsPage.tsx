@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { List, Calendar, SlidersHorizontal, Plane, Search } from 'lucide-react'
 import type { Transaction, TransactionType } from '../db/models'
 import { filterByPeriod, parseISODate } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
@@ -136,19 +137,19 @@ export default function TransactionsPage() {
               className={`seg-mini ${viewMode === 'list' ? 'active' : ''}`}
               onClick={() => setViewMode('list')}
               aria-label="列表视图"
-            >☰</button>
+            ><List size={18} strokeWidth={2} /></button>
             <button
               className={`seg-mini ${viewMode === 'calendar' ? 'active' : ''}`}
               onClick={() => setViewMode('calendar')}
               aria-label="日历视图"
-            >📅</button>
+            ><Calendar size={18} strokeWidth={2} /></button>
           </div>
           <button
             className={`header-icon filter-trigger ${activeCount(criteria) > 0 ? 'has-badge' : ''}`}
             onClick={() => setShowFilter(true)}
             aria-label="筛选"
           >
-            ⚙
+            <SlidersHorizontal size={20} strokeWidth={2} />
             {activeCount(criteria) > 0 && (
               <span className="filter-badge">{activeCount(criteria)}</span>
             )}
@@ -157,8 +158,8 @@ export default function TransactionsPage() {
             className="header-icon"
             onClick={() => setShowTripPicker(true)}
             aria-label="旅游记账"
-          >✈️</button>
-          <button className="header-icon" onClick={() => navigate('/search')} aria-label="搜索">🔍</button>
+          ><Plane size={20} strokeWidth={2} /></button>
+          <button className="header-icon" onClick={() => navigate('/search')} aria-label="搜索"><Search size={20} strokeWidth={2} /></button>
         </div>
       </header>
 
@@ -336,15 +337,19 @@ interface TxRowWithDeleteProps {
 function TxRowWithDelete({ transaction, onNavigate, onDelete }: TxRowWithDeleteProps) {
   const pressTimer = useRef<number | null>(null)
   const longPressed = useRef(false)
+  const [holding, setHolding] = useState(false)
 
   const startPress = () => {
     longPressed.current = false
+    setHolding(true)
     pressTimer.current = window.setTimeout(() => {
       longPressed.current = true
+      setHolding(false)
       onDelete()
-    }, 600)
+    }, 700)
   }
   const cancelPress = () => {
+    setHolding(false)
     if (pressTimer.current) {
       window.clearTimeout(pressTimer.current)
       pressTimer.current = null
@@ -353,7 +358,7 @@ function TxRowWithDelete({ transaction, onNavigate, onDelete }: TxRowWithDeleteP
 
   return (
     <div
-      className="tx-row-wrap"
+      className={`tx-row-wrap${holding ? ' holding' : ''}`}
       onClick={() => {
         if (longPressed.current) {
           longPressed.current = false
@@ -365,6 +370,7 @@ function TxRowWithDelete({ transaction, onNavigate, onDelete }: TxRowWithDeleteP
       onTouchEnd={cancelPress}
       onTouchMove={cancelPress}
     >
+      <span className="tx-row-holdfill" aria-hidden="true" />
       <TransactionRow transaction={transaction} />
       <button
         className="tx-row-delete"

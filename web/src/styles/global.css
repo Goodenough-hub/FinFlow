@@ -42,7 +42,21 @@
   --accent-glow: rgba(59, 130, 246, 0.4);
   --danger-tint: rgba(239, 68, 68, 0.12);
   --danger-tint-border: rgba(239, 68, 68, 0.4);
-  
+
+  /* Motion tokens — theme-independent (shared with AppPilot) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 120ms;
+  --dur-pop: 180ms;
+  --dur-menu: 220ms;
+  --dur-sheet: 320ms;
+
+  /* Spacing / radius scale */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-8: 48px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius-full: 999px;
+
   color-scheme: dark;
 }
 
@@ -157,11 +171,22 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Headings use Outfit for a modern tech feel */
+/* Headings use Outfit for a modern tech feel.
+   Tracking is size-specific: large display text wants tighter tracking,
+   small text wants looser. A single letter-spacing is wrong somewhere. */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', 'Inter', sans-serif;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+}
+
+h1 { letter-spacing: -0.02em; line-height: 1.15; }
+h2 { letter-spacing: -0.01em; line-height: 1.25; }
+
+/* Display-scale text (≥32px): tight leading, tighter tracking */
+.display,
+.page-header h1 {
+  line-height: 1.05;
 }
 
 button {
@@ -171,11 +196,15 @@ button {
   background: none;
   color: inherit;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--dur-press) var(--ease-out),
+              background-color var(--dur-press) var(--ease-out),
+              color var(--dur-press) var(--ease-out),
+              border-color var(--dur-press) var(--ease-out),
+              box-shadow var(--dur-press) var(--ease-out);
 }
 
 button:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 input, select, textarea {
@@ -317,4 +346,15 @@ input, select, textarea {
 
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Reduced motion: soften, don't remove. Keep opacity/color transitions
+   that aid comprehension; drop movement-based animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

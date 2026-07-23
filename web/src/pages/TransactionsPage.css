@@ -229,10 +229,36 @@
 .tx-row-wrap {
   cursor: pointer;
   position: relative;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .tx-row-wrap:active {
   opacity: 0.6;
+}
+
+/* Row content sits above the hold-to-confirm fill */
+.tx-row-wrap > :not(.tx-row-holdfill) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hold-to-delete fill: deliberate press (slow, linear), snappy release.
+   scaleX on the GPU; nothing appears from nowhere. */
+.tx-row-holdfill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--danger-tint);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 200ms var(--ease-out);
+  pointer-events: none;
+}
+
+.tx-row-wrap.holding .tx-row-holdfill {
+  transform: scaleX(1);
+  transition: transform 700ms linear;
 }
 
 .tx-row-delete {

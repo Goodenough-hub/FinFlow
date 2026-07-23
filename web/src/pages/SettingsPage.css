@@ -286,7 +286,12 @@
 .action-icon {
   font-size: 20px;
   width: 28px;
-  text-align: center;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .action-label {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import type { Account, AccountType, BankPreset } from '../db/models'
 import {
@@ -288,7 +289,7 @@ export default function AccountsPage() {
             onClick={() => setHideAmount(v => !v)}
             aria-label={hideAmount ? '显示金额' : '隐藏金额'}
           >
-            {hideAmount ? '🙈' : '👁'}
+            {hideAmount ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
           </button>
         </div>
         <div className="assets-amount">{hideAmount ? '¥ ∗ ∗ ∗ ∗' : asCurrency(totalAssets)}</div>
