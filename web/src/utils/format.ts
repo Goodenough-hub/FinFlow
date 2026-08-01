@@ -2,7 +2,7 @@ export function asCurrency(n: number): string {
   if (!Number.isFinite(n)) n = 0
   const abs = Math.abs(n)
   const formatted = abs.toLocaleString('zh-CN', {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
   return `${n < 0 ? '-' : ''}¥${formatted}`

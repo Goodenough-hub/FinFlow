@@ -3,28 +3,28 @@ import { asCurrency, formatCompact, formatPercent } from './format'
 
 describe('format utils', () => {
   describe('asCurrency', () => {
-    it('正数加 ¥ 前缀', () => {
-      expect(asCurrency(100)).toBe('¥100')
-      expect(asCurrency(1234.5)).toBe('¥1,234.5')
+    it('正数加 ¥ 前缀，恒为两位小数', () => {
+      expect(asCurrency(100)).toBe('¥100.00')
+      expect(asCurrency(1234.5)).toBe('¥1,234.50')
     })
 
     it('负数加 - 前缀', () => {
-      expect(asCurrency(-100)).toBe('-¥100')
-      expect(asCurrency(-1234.5)).toBe('-¥1,234.5')
+      expect(asCurrency(-100)).toBe('-¥100.00')
+      expect(asCurrency(-1234.5)).toBe('-¥1,234.50')
     })
 
     it('零', () => {
-      expect(asCurrency(0)).toBe('¥0')
+      expect(asCurrency(0)).toBe('¥0.00')
     })
 
     it('NaN/Infinity 兜底为 0', () => {
-      expect(asCurrency(Number.NaN)).toBe('¥0')
-      expect(asCurrency(Number.POSITIVE_INFINITY)).toBe('¥0')
+      expect(asCurrency(Number.NaN)).toBe('¥0.00')
+      expect(asCurrency(Number.POSITIVE_INFINITY)).toBe('¥0.00')
     })
 
-    it('保留最多 2 位小数', () => {
-      expect(asCurrency(1.999)).toBe('¥2')
-      expect(asCurrency(1.5)).toBe('¥1.5')
+    it('四舍五入到 2 位小数', () => {
+      expect(asCurrency(1.999)).toBe('¥2.00')
+      expect(asCurrency(1.5)).toBe('¥1.50')
       expect(asCurrency(1.25)).toBe('¥1.25')
     })
 
