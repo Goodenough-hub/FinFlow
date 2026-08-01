@@ -9,6 +9,7 @@ import { useQuery } from '../hooks/useQuery'
 import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
 import SummaryCard from '../components/SummaryCard'
+import MonthCompare from '../components/MonthCompare'
 import BudgetOverview from '../components/BudgetOverview'
 import DailyBarChart from '../components/DailyBarChart'
 import CategoryAnalysis from '../components/CategoryAnalysis'
@@ -61,6 +62,8 @@ export default function HomePage() {
       />
 
       <SummaryCard income={totals.income} expense={totals.expense} balance={totals.balance} />
+
+      <MonthCompare transactions={allTransactions} period={period} date={date} />
 
       <OverspendAlertBanner />
 

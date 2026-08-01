@@ -1,0 +1,70 @@
+.month-compare {
+  padding: 16px 20px;
+  background: var(--gradient-card);
+  border: 1px solid var(--glass-border);
+}
+
+.mc-row {
+  padding: 8px 0;
+}
+
+.mc-row:first-child {
+  padding-top: 0;
+}
+
+.mc-row:last-child {
+  padding-bottom: 0;
+}
+
+.mc-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 6px;
+}
+
+.mc-values {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mc-current {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.mc-change {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  white-space: nowrap;
+}
+
+.mc-arrow {
+  margin-right: 2px;
+  font-size: 12px;
+}
+
+.mc-pct {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.mc-divider {
+  height: 0.5px;
+  background: var(--card-border);
+  margin: 10px 0;
+}
