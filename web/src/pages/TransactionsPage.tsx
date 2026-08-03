@@ -372,16 +372,6 @@ function TxRowWithDelete({ transaction, onNavigate, onDelete }: TxRowWithDeleteP
     >
       <span className="tx-row-holdfill" aria-hidden="true" />
       <TransactionRow transaction={transaction} />
-      <button
-        className="tx-row-delete"
-        onClick={(e) => {
-          e.stopPropagation()
-          onDelete()
-        }}
-        aria-label="删除"
-      >
-        ×
-      </button>
     </div>
   )
 }
