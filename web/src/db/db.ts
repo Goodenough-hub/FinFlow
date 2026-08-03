@@ -42,7 +42,4 @@ export class FinFlowDB extends Dexie {
 
 export const db = new FinFlowDB()
 
-export const uid = (): string =>
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+export { uid } from '../utils/uid'
