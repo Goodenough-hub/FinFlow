@@ -231,6 +231,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 12px;
+  padding-right: 40px;
 }
 
 .tx-row-wrap:active {
@@ -263,7 +264,7 @@
 
 .tx-row-delete {
   position: absolute;
-  right: 0;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
   width: 32px;
