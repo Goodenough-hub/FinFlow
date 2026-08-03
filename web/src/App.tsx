@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
 import TransactionsPage from './pages/TransactionsPage'
@@ -19,10 +20,20 @@ import LoginPage from './pages/LoginPage'
 import PWAToasts from './components/PWAToasts'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
+import { trackPageview } from './api/track'
+
+function PageTracker() {
+  const location = useLocation()
+  useEffect(() => {
+    trackPageview(location.pathname)
+  }, [location])
+  return null
+}
 
 export default function App() {
   return (
     <AuthProvider>
+      <PageTracker />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
