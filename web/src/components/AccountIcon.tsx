@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import type { AccountType } from '../db/models'
-import { BANK_PRESETS } from '../db/models'
+import { BANK_PRESETS, ACCOUNT_TYPES } from '../db/models'
 import CategoryIcon from './CategoryIcon'
 
 interface Props {
@@ -21,13 +21,17 @@ export default function AccountIcon({ type, icon, colorHex, size = 36 }: Props) 
     setFailed(attempted.has(cacheKey))
   }, [cacheKey])
 
-  if (failed) {
+  // 空/未知 type（如数据异常导致 type 丢失）没有对应 SVG，直接用文字兜底，
+  // 避免请求 /icons/accounts/.svg 拿到 404 再闪一下。
+  const knownType = (ACCOUNT_TYPES as string[]).includes(type)
+
+  if (failed || !knownType) {
     let fallbackIcon = icon
     if (type === 'bank') {
       const bank = BANK_PRESETS.find(b => b.code === icon)
       fallbackIcon = bank?.abbr ?? '行'
     }
-    return <CategoryIcon icon={fallbackIcon} color={colorHex} size={size} />
+    return <CategoryIcon icon={fallbackIcon || '卡'} color={colorHex} size={size} />
   }
 
   const src = type === 'bank' && icon
