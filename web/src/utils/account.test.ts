@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Account } from '../db/models'
-import { getChildrenMap, isLeafAccount, getLeafAccounts } from './account'
+import { getChildrenMap, isLeafAccount, getLeafAccounts, reverseInitialBalance, accountDisplayBalance } from './account'
 
 function makeAccount(id: string, overrides: Partial<Account> = {}): Account {
   return {
@@ -63,5 +63,49 @@ describe('getLeafAccounts', () => {
 
   it('空数组返回空数组', () => {
     expect(getLeafAccounts([])).toEqual([])
+  })
+})
+
+describe('reverseInitialBalance', () => {
+  it('叶子：当前余额从 26554.32 改为 30000，初始余额按 delta 反算', () => {
+    // 旧初始 24516.40，旧当前 26554.32；改当前到 30000
+    const result = reverseInitialBalance(24516.4, 26554.32, 30000)
+    expect(result).toBeCloseTo(24516.4 + (30000 - 26554.32), 2)
+  })
+
+  it('当前余额不变时，初始余额不变', () => {
+    expect(reverseInitialBalance(100, 250, 250)).toBe(100)
+  })
+
+  it('调小当前余额，初始余额同额减少', () => {
+    expect(reverseInitialBalance(100, 250, 200)).toBe(50)
+  })
+})
+
+describe('accountDisplayBalance', () => {
+  it('叶子账户返回自身余额', () => {
+    const own = new Map([['a', 123.45]])
+    expect(accountDisplayBalance('a', new Map(), own)).toBeCloseTo(123.45, 2)
+  })
+
+  it('容器账户返回 自身 + Σ子账户', () => {
+    const parent = makeAccount('p')
+    const c1 = makeAccount('c1', { parentId: 'p' })
+    const c2 = makeAccount('c2', { parentId: 'p' })
+    const childrenMap = getChildrenMap([parent, c1, c2])
+    const own = new Map([['p', 10], ['c1', 100], ['c2', 200]])
+    expect(accountDisplayBalance('p', childrenMap, own)).toBe(310)
+  })
+
+  it('容器自身余额为 0 时等于 Σ子账户', () => {
+    const parent = makeAccount('p')
+    const c1 = makeAccount('c1', { parentId: 'p' })
+    const childrenMap = getChildrenMap([parent, c1])
+    const own = new Map([['p', 0], ['c1', 500]])
+    expect(accountDisplayBalance('p', childrenMap, own)).toBe(500)
+  })
+
+  it('缺失余额按 0 处理', () => {
+    expect(accountDisplayBalance('missing', new Map(), new Map())).toBe(0)
   })
 })
