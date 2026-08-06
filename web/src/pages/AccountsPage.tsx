@@ -169,7 +169,6 @@ export default function AccountsPage() {
       .filter(t => t.type !== 'transfer')
       .sort((a, b) => a.date.localeCompare(b.date))
     const baseTotal = sortedAccounts
-      .filter(a => !childrenMap.has(a.id))
       .reduce((s, a) => s + a.initialBalance, 0)
     const now = new Date()
     const points: { label: string; value: number }[] = []
