@@ -71,13 +71,11 @@ export default function AccountDetailPage() {
     return map
   }, [isGroup, childAccounts, allTransactions])
 
-  const balance = useMemo(() => {
+  // 账户自身余额：initialBalance + 直接挂在本账户上的交易净额（不含子账户）
+  const ownBalance = useMemo(() => {
     if (!account) return 0
-    if (isGroup) {
-      return childAccounts.reduce((s, c) => s + (childBalances.get(c.id) ?? 0), 0)
-    }
     let total = account.initialBalance
-    for (const t of accountTransactions) {
+    for (const t of allTransactions) {
       if (t.type === 'transfer') {
         if (t.accountId === id) total -= t.amount
         if (t.toAccountId === id) total += t.amount
@@ -87,7 +85,15 @@ export default function AccountDetailPage() {
       }
     }
     return total
-  }, [account, isGroup, childAccounts, childBalances, accountTransactions, id])
+  }, [account, allTransactions, id])
+
+  // 展示余额：自身 + 所有子账户余额（叶子无子账户，即自身）
+  const balance = useMemo(() => {
+    if (isGroup) {
+      return ownBalance + childAccounts.reduce((s, c) => s + (childBalances.get(c.id) ?? 0), 0)
+    }
+    return ownBalance
+  }, [isGroup, ownBalance, childAccounts, childBalances])
 
   const monthTransactions = useMemo(() => {
     const y = filterMonth.getFullYear()
