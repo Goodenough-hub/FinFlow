@@ -12,6 +12,7 @@ import {
 } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
+import { accountDisplayBalance } from '../utils/account'
 import { useTheme } from '../hooks/useTheme'
 import { useQuery } from '../hooks/useQuery'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
@@ -116,12 +117,9 @@ export default function AccountsPage() {
   const { liquidAccounts, fixedAccounts, totalAssets, liquidTotal, fixedTotal } = useMemo(() => {
     const liquid = rootAccounts.filter(a => a.type !== 'fixed')
     const fixed = rootAccounts.filter(a => a.type === 'fixed')
-    // 汇总只算叶子账户（无子账户的主账户 + 所有子账户）
-    const leafSum = (roots: Account[]) => roots.reduce((s, a) => {
-      const kids = childrenMap.get(a.id) ?? []
-      if (kids.length === 0) return s + (balances.get(a.id) ?? 0)
-      return s + kids.reduce((cs, k) => cs + (balances.get(k.id) ?? 0), 0)
-    }, 0)
+    // 每个根账户 = 自身 + Σ子账户；容器自身余额计入总额
+    const leafSum = (roots: Account[]) =>
+      roots.reduce((s, a) => s + accountDisplayBalance(a.id, childrenMap, balances), 0)
     const liquidTotal = leafSum(liquid)
     const fixedTotal = leafSum(fixed)
     return {
@@ -171,7 +169,6 @@ export default function AccountsPage() {
       .filter(t => t.type !== 'transfer')
       .sort((a, b) => a.date.localeCompare(b.date))
     const baseTotal = sortedAccounts
-      .filter(a => !childrenMap.has(a.id))
       .reduce((s, a) => s + a.initialBalance, 0)
     const now = new Date()
     const points: { label: string; value: number }[] = []
@@ -441,10 +438,9 @@ function AccountRowGroup({
   draggable, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd
 }: AccountRowGroupProps) {
   const hasChildren = children.length > 0
-  // 主账户余额：叶子直接取余额；分组容器=子账户之和
-  const mainBalance = hasChildren
-    ? children.reduce((s, k) => s + (balances.get(k.id) ?? 0), 0)
-    : (balances.get(account.id) ?? 0)
+  // 余额 = 账户自身余额 + 所有子账户余额（叶子无子账户，即自身）
+  const mainBalance = (balances.get(account.id) ?? 0)
+    + children.reduce((s, k) => s + (balances.get(k.id) ?? 0), 0)
 
   return (
     <>
