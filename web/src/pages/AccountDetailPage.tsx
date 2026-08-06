@@ -4,7 +4,7 @@ import type { Account } from '../db/models'
 import { accountTypeLabel } from '../db/models'
 import { asCurrency } from '../utils/format'
 import { toISODate } from '../utils/date'
-import { getLeafAccounts } from '../utils/account'
+import { getLeafAccounts, reverseInitialBalance } from '../utils/account'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
@@ -308,7 +308,7 @@ export default function AccountDetailPage() {
       </section>
 
       {editing && (
-        <EditAccountDialog account={account} onClose={() => setEditing(false)} />
+        <EditAccountDialog account={account} currentBalance={balance} onClose={() => setEditing(false)} />
       )}
       {recharging && (
         <RechargeDialog account={account} onClose={() => setRecharging(false)} />
@@ -334,23 +334,26 @@ export default function AccountDetailPage() {
 
 interface EditProps {
   account: Account
+  currentBalance: number
   onClose: () => void
 }
 
-function EditAccountDialog({ account, onClose }: EditProps) {
+function EditAccountDialog({ account, currentBalance, onClose }: EditProps) {
   const navigate = useNavigate()
   const [name, setName] = useState(account.name)
   const [icon, setIcon] = useState(account.icon)
   const [colorHex, setColorHex] = useState(account.colorHex)
-  const [initialBalance, setInitialBalance] = useState(String(account.initialBalance))
+  const [balanceInput, setBalanceInput] = useState(String(currentBalance))
 
   const handleSave = async () => {
     if (!name.trim()) return
+    const newDisplay = parseFloat(balanceInput) || 0
+    const newInitial = reverseInitialBalance(account.initialBalance, currentBalance, newDisplay)
     await accountsApi.update(account.id, {
       name: name.trim(),
       icon,
       colorHex,
-      initialBalance: parseFloat(initialBalance) || 0
+      initialBalance: newInitial
     })
     await refreshAccounts()
     onClose()
@@ -386,15 +389,15 @@ function EditAccountDialog({ account, onClose }: EditProps) {
             />
           </div>
           <div className="dialog-field">
-            <label>初始余额</label>
+            <label>余额</label>
             <div className="amount-input-wrap">
               <span className="amount-currency">¥</span>
               <input
                 className="amount-input"
                 type="text"
                 inputMode="decimal"
-                value={initialBalance}
-                onChange={e => setInitialBalance(e.target.value)}
+                value={balanceInput}
+                onChange={e => setBalanceInput(e.target.value)}
               />
             </div>
           </div>
