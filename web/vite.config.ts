@@ -60,18 +60,11 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/, /^\/sw\.js/, /^\/workbox-/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
+        skipWaiting: true,
+        // 只保留静态资源的 runtime cache；catch-all StaleWhileRevalidate 已删——
+        // precache 已按内容哈希覆盖所有 built assets，那条 SWR 反而会让 non-precache
+        // 请求返回过期副本，加剧 UI 与 DB 版本 skew（见修复：brand: 前缀显示为字面量）。
         runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.origin === self.location.origin,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'finflow-shell',
-              expiration: {
-                maxEntries: 60,
-                maxAgeSeconds: 30 * 24 * 60 * 60
-              }
-            }
-          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff2?)$/,
             handler: 'CacheFirst',
