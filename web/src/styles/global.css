@@ -155,6 +155,13 @@ html, body, #root {
   height: 100%;
 }
 
+/* 防止任何子元素意外触发页面级横向滚动（部分 Android 浏览器如小米/HyperOS
+   会记住非零横向 scroll 位置，导致整页向左偏移，iOS Safari 会自动阻止）。 */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 html {
   background: var(--bg-primary);
 }

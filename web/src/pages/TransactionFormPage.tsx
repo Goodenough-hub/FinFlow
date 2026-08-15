@@ -7,6 +7,7 @@ import { useCategories, useAccounts } from '../hooks/useLookup'
 import { transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import AccountIcon from '../components/AccountIcon'
+import NumericKeypad from '../components/NumericKeypad'
 import './TransactionFormPage.css'
 
 // 按分类名弹出对应「平台」选择器（打车 App / 外卖平台）
@@ -254,11 +255,11 @@ export default function TransactionFormPage() {
             <input
               className="amount-input"
               type="text"
-              inputMode="decimal"
+              inputMode="none"
+              readOnly
               placeholder="0.00"
               value={amountText}
-              onChange={e => setAmountText(e.target.value)}
-              autoFocus={!isEdit}
+              onChange={() => { /* controlled by NumericKeypad */ }}
             />
           </div>
         </section>
@@ -473,6 +474,10 @@ export default function TransactionFormPage() {
             <button className="delete-btn" onClick={handleDelete}>删除此交易</button>
           </section>
         )}
+      </div>
+
+      <div className="form-keypad-dock">
+        <NumericKeypad value={amountText} onChange={setAmountText} />
       </div>
     </div>
   )
