@@ -10,9 +10,38 @@ interface Props {
 export default function CategoryIcon({ icon, color, size = 36 }: Props) {
   const brand = parseBrand(icon)
 
-  // 品牌图标：容器 tint 换成品牌色，svg 走 mask 单色填充为品牌色，否则 monogram
   if (brand) {
     const radius = size * 0.28
+
+    // 优先级 1：真实 logo (多色 PNG/ICO) — 白底容器 + 品牌色淡边，直出 <img>
+    if (brand.logo) {
+      const imgSize = size * 0.7
+      const containerStyle: CSSProperties = {
+        width: size,
+        height: size,
+        background: '#fff',
+        borderRadius: radius,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        border: `0.5px solid ${brand.color}55`,
+        overflow: 'hidden'
+      }
+      const imgStyle: CSSProperties = {
+        width: imgSize,
+        height: imgSize,
+        objectFit: 'contain',
+        display: 'block'
+      }
+      return (
+        <span style={containerStyle}>
+          <img src={`/icons/categories/${brand.logo}`} alt="" style={imgStyle} />
+        </span>
+      )
+    }
+
+    // 优先级 2：单色 SVG (currentColor 线稿)，mask 上色为品牌色
     if (brand.svg) {
       const maskSize = size * 0.6
       const containerStyle: CSSProperties = {
@@ -27,7 +56,6 @@ export default function CategoryIcon({ icon, color, size = 36 }: Props) {
         border: `0.5px solid ${brand.color}44`,
         overflow: 'hidden'
       }
-      // WebKit mask + background-color 让 simple-icons 黑色单色 SVG 显示为品牌色
       const svgStyle: CSSProperties = {
         width: maskSize,
         height: maskSize,
@@ -47,7 +75,8 @@ export default function CategoryIcon({ icon, color, size = 36 }: Props) {
         </span>
       )
     }
-    // Monogram 兜底：品牌色实心 + 白字
+
+    // 优先级 3：monogram 兜底 — 品牌色实心 + 白字
     const mono = brand.mono ?? '?'
     const monoStyle: CSSProperties = {
       width: size,
@@ -68,7 +97,7 @@ export default function CategoryIcon({ icon, color, size = 36 }: Props) {
     return <span style={monoStyle}>{mono}</span>
   }
 
-  // 兜底：原 emoji/文字渲染，保持向后兼容
+  // 非品牌 icon：走原 emoji/文字渲染
   const style: CSSProperties = {
     width: size,
     height: size,
