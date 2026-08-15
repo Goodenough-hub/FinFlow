@@ -102,6 +102,44 @@
   box-shadow: 0 0 0 4px var(--accent-tint);
 }
 
+.login-password-wrap {
+  position: relative;
+}
+
+.login-password-wrap .login-input {
+  padding-right: 40px;
+}
+
+.login-password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--dur-menu) var(--ease-out),
+              background var(--dur-menu) var(--ease-out);
+}
+
+.login-password-toggle:hover {
+  color: var(--text-primary);
+  background: var(--card-border);
+}
+
+.login-password-toggle:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 1px;
+}
+
 .login-submit {
   width: 100%;
   margin-top: var(--space-2);

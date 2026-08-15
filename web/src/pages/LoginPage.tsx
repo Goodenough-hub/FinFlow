@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import './LoginPage.css'
 
@@ -8,6 +9,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [showPwd, setShowPwd] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -42,14 +44,26 @@ export default function LoginPage() {
           />
         </div>
         <div className="login-field">
-          <input
-            className="login-input"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="密码"
-            required
-          />
+          <div className="login-password-wrap">
+            <input
+              className="login-input"
+              type={showPwd ? 'text' : 'password'}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="密码"
+              required
+            />
+            <button
+              type="button"
+              className="login-password-toggle"
+              onClick={() => setShowPwd(v => !v)}
+              aria-label={showPwd ? '隐藏密码' : '显示密码'}
+              aria-pressed={showPwd}
+              tabIndex={-1}
+            >
+              {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
         <button type="submit" className="login-submit" disabled={loading}>
           {loading ? '登录中…' : '登录'}
