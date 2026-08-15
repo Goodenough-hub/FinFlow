@@ -57,22 +57,31 @@
   box-sizing: border-box;
 }
 
-/* 数字键盘 dock：sticky 在 .form-page 底部；.form-body 是滚动内容，
-   .form-page 的高度 ≥ 100dvh，dock 会随视口底部固定。 */
+/* 数字键盘 dock：fixed 到视口底部。之前用 position: sticky + flex 布局
+   在多个浏览器（iOS Safari / Xiaomi HyperOS）都直接不显示——切换 fixed
+   最可靠，配合 .form-body 的 padding-bottom 预留空间。 */
 .form-keypad-dock {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
   background: var(--bg-card);
   border-top: 0.5px solid var(--card-border);
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  max-width: 640px;
-  margin: 0 auto;
-  width: 100%;
   box-sizing: border-box;
-  z-index: 10;
-  /* 半透明 + 模糊，避免遮挡时突兀 */
-  backdrop-filter: saturate(180%) blur(16px);
-  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  z-index: 20;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* 桌面：与 .form-body 一样收窄居中，两侧留白 */
+@media (min-width: 640px) {
+  .form-keypad-dock {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: 640px;
+    width: 100%;
+  }
 }
 
 .form-section {
