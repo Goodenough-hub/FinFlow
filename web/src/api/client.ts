@@ -21,7 +21,7 @@ let pendingQueue: Array<(token: string) => void> = []
 function redirectToLogin() {
   localStorage.removeItem(TOKEN_KEY)
   if (!window.location.pathname.endsWith('/login')) {
-    window.location.href = '/login'
+    window.location.href = '/finflow/login'
   }
 }
 

@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/finflow/',
   test: {
     environment: 'node',
     include: ['src/**/*.{test,spec}.{ts,tsx}']
@@ -21,43 +22,43 @@ export default defineConfig({
         background_color: '#0F0F11',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/finflow/',
+        start_url: '/finflow/',
         lang: 'zh-CN',
         categories: ['finance', 'productivity', 'utilities'],
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+          { src: '/finflow/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/finflow/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/finflow/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ],
         shortcuts: [
           {
             name: '记一笔',
             short_name: '记账',
             description: '快速新增一笔交易',
-            url: '/transactions/new',
-            icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }]
+            url: '/finflow/transactions/new',
+            icons: [{ src: '/finflow/icons/icon-192.png', sizes: '192x192' }]
           },
           {
             name: '账单',
             short_name: '账单',
             description: '查看所有交易',
-            url: '/transactions',
-            icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }]
+            url: '/finflow/transactions',
+            icons: [{ src: '/finflow/icons/icon-192.png', sizes: '192x192' }]
           },
           {
             name: '报表',
             short_name: '报表',
             description: '查看收支报表',
-            url: '/reports',
-            icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }]
+            url: '/finflow/reports',
+            icons: [{ src: '/finflow/icons/icon-192.png', sizes: '192x192' }]
           }
         ]
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/sw\.js/, /^\/workbox-/],
+        navigateFallback: '/finflow/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/finflow\/sw\.js/, /^\/finflow\/workbox-/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,

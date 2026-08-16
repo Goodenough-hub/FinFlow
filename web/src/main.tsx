@@ -16,7 +16,7 @@ const updateSW = registerSW({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/finflow">
       <App />
     </BrowserRouter>
   </React.StrictMode>
