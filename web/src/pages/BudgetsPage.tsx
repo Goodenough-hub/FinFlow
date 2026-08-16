@@ -5,6 +5,7 @@ import { collectDescendantIds } from '../utils/category'
 import { asCurrency } from '../utils/format'
 import { monthYearString } from '../utils/date'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useCategories } from '../hooks/useLookup'
 import { budgetsApi, transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
@@ -223,6 +224,7 @@ function BudgetDialog({ state, year, month, excludeIds, onClose, onSaved }: Dial
   const existing = isEdit ? state.budget : undefined
 
   const { list: availableCategories = [] } = useCategories()
+  const { confirm, confirmElement } = useConfirm()
 
   const [categoryId, setCategoryId] = useState<string>(existing?.categoryId ?? '')
   const [amountText, setAmountText] = useState(existing ? String(existing.amount) : '')
@@ -256,7 +258,7 @@ function BudgetDialog({ state, year, month, excludeIds, onClose, onSaved }: Dial
 
   const handleDelete = async () => {
     if (!existing) return
-    if (!confirm('删除此预算？')) return
+    if (!(await confirm('删除此预算？'))) return
     await budgetsApi.remove(existing.id)
     onSaved()
     onClose()
@@ -327,6 +329,8 @@ function BudgetDialog({ state, year, month, excludeIds, onClose, onSaved }: Dial
           )}
         </div>
       </div>
+
+      {confirmElement}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Trip } from '../db/models'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useTrips, refreshTrips } from '../hooks/useLookup'
 import { transactionsApi, tripsApi } from '../api/finflow'
 import { asCurrency } from '../utils/format'
@@ -108,6 +109,7 @@ function TripEditDialog({
   onSaved: () => void
 }) {
   const isEdit = Boolean(trip)
+  const { confirm, confirmElement } = useConfirm()
   const [name, setName] = useState(trip?.name ?? '')
   const [startDate, setStartDate] = useState(trip?.startDate ?? '')
   const [endDate, setEndDate] = useState(trip?.endDate ?? '')
@@ -139,7 +141,7 @@ function TripEditDialog({
 
   const handleDelete = async () => {
     if (!trip) return
-    if (!confirm(tripDeleteConfirmText(trip.name))) return
+    if (!(await confirm(tripDeleteConfirmText(trip.name)))) return
     setBusy(true)
     try {
       await tripsApi.remove(trip.id)
@@ -187,6 +189,8 @@ function TripEditDialog({
           </button>
         )}
       </div>
+
+      {confirmElement}
     </div>
   )
 }

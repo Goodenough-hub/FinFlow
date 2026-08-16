@@ -7,6 +7,7 @@ import { toISODate } from '../utils/date'
 import { getLeafAccounts, reverseInitialBalance } from '../utils/account'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
 import AccountIcon from '../components/AccountIcon'
@@ -27,6 +28,7 @@ export default function AccountDetailPage() {
   const [editing, setEditing] = useState(false)
   const [recharging, setRecharging] = useState(false)
   const [addingChild, setAddingChild] = useState(false)
+  const { confirm, confirmElement } = useConfirm()
 
   const childAccounts = useMemo(
     () => id ? allAccounts.filter(a => a.parentId === id).sort((a, b) => a.sortOrder - b.sortOrder) : [],
@@ -156,7 +158,7 @@ export default function AccountDetailPage() {
 
   const handleDelete = async () => {
     if (isGroup) {
-      if (!confirm(`此账户下有 ${childAccounts.length} 个子账户，将一并删除。相关交易会保留但失去账户关联。继续？`)) return
+      if (!(await confirm(`此账户下有 ${childAccounts.length} 个子账户，将一并删除。相关交易会保留但失去账户关联。继续？`))) return
       for (const c of childAccounts) {
         await accountsApi.remove(c.id)
       }
@@ -169,14 +171,14 @@ export default function AccountDetailPage() {
     const msg = txCount > 0
       ? `删除此账户？该账户下有 ${txCount} 笔交易，删除后这些交易将保留但失去账户关联。`
       : '删除此账户？'
-    if (!confirm(msg)) return
+    if (!(await confirm(msg))) return
     await accountsApi.remove(account.id)
     await refreshAccounts()
     navigate('/accounts')
   }
 
   const handleDeleteChild = async (childId: string, childName: string) => {
-    if (!confirm(`删除子账户「${childName}」？相关交易将保留但失去账户关联。`)) return
+    if (!(await confirm(`删除子账户「${childName}」？相关交易将保留但失去账户关联。`))) return
     await accountsApi.remove(childId)
     await refreshAccounts()
   }
@@ -328,6 +330,8 @@ export default function AccountDetailPage() {
           删除此账户
         </button>
       )}
+
+      {confirmElement}
     </div>
   )
 }
@@ -340,6 +344,7 @@ interface EditProps {
 
 function EditAccountDialog({ account, currentBalance, onClose }: EditProps) {
   const navigate = useNavigate()
+  const { confirm, confirmElement } = useConfirm()
   const [name, setName] = useState(account.name)
   const [icon, setIcon] = useState(account.icon)
   const [colorHex, setColorHex] = useState(account.colorHex)
@@ -360,7 +365,7 @@ function EditAccountDialog({ account, currentBalance, onClose }: EditProps) {
   }
 
   const handleDelete = async () => {
-    if (!confirm('删除此账户？相关交易将保留但失去账户关联。')) return
+    if (!(await confirm('删除此账户？相关交易将保留但失去账户关联。'))) return
     await accountsApi.remove(account.id)
     await refreshAccounts()
     onClose()
@@ -430,6 +435,8 @@ function EditAccountDialog({ account, currentBalance, onClose }: EditProps) {
           )}
         </div>
       </div>
+
+      {confirmElement}
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { usePWA } from '../hooks/usePWA'
 import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../theme'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
 import { getLeafAccounts, getChildrenMap } from '../utils/account'
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const { mode: theme, setThemeMode } = useTheme()
   const [busy, setBusy] = useState(false)
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
+  const { confirm, confirmElement } = useConfirm()
 
   const childrenMap = useMemo(() => getChildrenMap(accs), [accs])
 
@@ -55,8 +57,8 @@ export default function SettingsPage() {
 
   const handleThemeChange = (mode: ThemeMode) => setThemeMode(mode)
 
-  const handleLogout = () => {
-    if (!confirm('确定退出登录？')) return
+  const handleLogout = async () => {
+    if (!(await confirm('确定退出登录？'))) return
     logout()
     navigate('/login', { replace: true })
   }
@@ -66,7 +68,7 @@ export default function SettingsPage() {
       alert('已存在交易数据，无法填充示例。请先清空所有交易。')
       return
     }
-    if (!confirm('填充最近 2 年（24 个月）示例交易数据？')) return
+    if (!(await confirm('填充最近 2 年（24 个月）示例交易数据？'))) return
     setBusy(true)
     try {
       const ok = await fillSampleData(cats, accs)
@@ -83,8 +85,8 @@ export default function SettingsPage() {
   }
 
   const handleClearAll = async () => {
-    if (!confirm('清空所有交易数据？此操作不可恢复！')) return
-    if (!confirm('再次确认：将删除全部交易记录，分类和账户保留。')) return
+    if (!(await confirm('清空所有交易数据？此操作不可恢复！'))) return
+    if (!(await confirm('再次确认：将删除全部交易记录，分类和账户保留。'))) return
     setBusy(true)
     try {
       await Promise.all(txs.map(t => transactionsApi.remove(t.id)))
@@ -101,8 +103,8 @@ export default function SettingsPage() {
       alert('没有可清空的账户')
       return
     }
-    if (!confirm(`清空所有账户？将删除全部 ${accs.length} 个账户及其关联交易，此操作不可恢复！`)) return
-    if (!confirm('再次确认：账户、关联交易、周期性交易都会被删除，分类和预算保留。')) return
+    if (!(await confirm(`清空所有账户？将删除全部 ${accs.length} 个账户及其关联交易，此操作不可恢复！`))) return
+    if (!(await confirm('再次确认：账户、关联交易、周期性交易都会被删除，分类和预算保留。'))) return
     setBusy(true)
     try {
       await accountsApi.clear()
@@ -145,7 +147,7 @@ export default function SettingsPage() {
         alert('未在备份中找到有效数据')
         return
       }
-      if (!confirm(`将导入 ${txsIn.length} 笔交易、${catsIn.length} 个分类、${accsIn.length} 个账户。\n注意：备份中的旧 ID 会被忽略，将生成新 ID。当前数据不会被覆盖。\n是否继续？`)) return
+      if (!(await confirm(`将导入 ${txsIn.length} 笔交易、${catsIn.length} 个分类、${accsIn.length} 个账户。\n注意：备份中的旧 ID 会被忽略，将生成新 ID。当前数据不会被覆盖。\n是否继续？`))) return
       setBusy(true)
       let okTx = 0, okCat = 0, okAcc = 0
       for (const c of catsIn) {
@@ -420,6 +422,8 @@ export default function SettingsPage() {
       <div className="logout-section">
         <button className="logout-btn" onClick={handleLogout}>退出登录</button>
       </div>
+
+      {confirmElement}
     </div>
   )
 }

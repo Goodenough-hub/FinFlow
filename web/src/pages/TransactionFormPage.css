@@ -57,6 +57,11 @@
   box-sizing: border-box;
 }
 
+/* 原生键盘/选择器唤起时 dock 隐藏，底部不再预留空间 */
+.form-body.keypad-hidden {
+  padding-bottom: 24px;
+}
+
 /* 数字键盘 dock：fixed 到视口底部。之前用 position: sticky + flex 布局
    在多个浏览器（iOS Safari / Xiaomi HyperOS）都直接不显示——切换 fixed
    最可靠，配合 .form-body 的 padding-bottom 预留空间。 */
@@ -246,7 +251,8 @@
 .form-input {
   width: 100%;
   padding: 10px 12px;
-  font-size: 14px;
+  /* ≥16px：iOS 聚焦小于 16px 的输入框会自动放大页面 */
+  font-size: 16px;
   color: var(--text-primary);
   background: var(--bg-card-elevated);
   border: 1px solid var(--card-border);
@@ -362,7 +368,8 @@
 .form-textarea {
   width: 100%;
   padding: 10px 12px;
-  font-size: 14px;
+  /* ≥16px：iOS 聚焦小于 16px 的输入框会自动放大页面 */
+  font-size: 16px;
   color: var(--text-primary);
   background: var(--bg-card-elevated);
   border: 1px solid var(--card-border);

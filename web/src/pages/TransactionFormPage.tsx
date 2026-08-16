@@ -4,10 +4,12 @@ import type { Category, Transaction, TransactionType } from '../db/models'
 import { toISODate } from '../utils/date'
 import { useQuery } from '../hooks/useQuery'
 import { useCategories, useAccounts } from '../hooks/useLookup'
+import { useConfirm } from '../hooks/useConfirm'
 import { transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import AccountIcon from '../components/AccountIcon'
 import NumericKeypad from '../components/NumericKeypad'
+import { isTextEntryTarget } from '../utils/focus'
 import './TransactionFormPage.css'
 
 // 按分类名弹出对应「平台」选择器（打车 App / 外卖平台）
@@ -42,6 +44,9 @@ export default function TransactionFormPage() {
   const [vendor, setVendor] = useState<string>('')
   const [tripId, setTripId] = useState<string | undefined>()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  // 原生键盘/选择器唤起时（备注、日期时间聚焦）隐藏自定义数字键盘，避免双键盘叠屏
+  const [entryFocused, setEntryFocused] = useState(false)
+  const { confirm, confirmElement } = useConfirm()
 
   useEffect(() => {
     if (!existing) return
@@ -214,7 +219,7 @@ export default function TransactionFormPage() {
 
   const handleDelete = async () => {
     if (!existing) return
-    if (!confirm('确定删除此交易？')) return
+    if (!(await confirm('确定删除此交易？'))) return
     await transactionsApi.remove(existing.id)
     navigate(-1)
   }
@@ -233,7 +238,11 @@ export default function TransactionFormPage() {
         </button>
       </header>
 
-      <div className="form-body">
+      <div
+        className={`form-body${entryFocused ? ' keypad-hidden' : ''}`}
+        onFocus={e => { if (isTextEntryTarget(e.target)) setEntryFocused(true) }}
+        onBlur={e => { if (isTextEntryTarget(e.target)) setEntryFocused(false) }}
+      >
         <section className="form-section">
           <div className="type-segmented">
             <button className={type === 'expense' ? 'active' : ''} onClick={() => handleTypeChange('expense')}>
@@ -476,9 +485,13 @@ export default function TransactionFormPage() {
         )}
       </div>
 
-      <div className="form-keypad-dock">
-        <NumericKeypad value={amountText} onChange={setAmountText} />
-      </div>
+      {!entryFocused && (
+        <div className="form-keypad-dock">
+          <NumericKeypad value={amountText} onChange={setAmountText} />
+        </div>
+      )}
+
+      {confirmElement}
     </div>
   )
 }

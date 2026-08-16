@@ -1,0 +1,57 @@
+/* 应用内确认框：居中卡片 + 遮罩。z-index 高于底部弹层（200），
+   以便在 TripPickerDialog 等弹层之上再弹确认。 */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.confirm-dialog {
+  width: calc(100% - 64px);
+  max-width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px 16px 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+}
+
+.confirm-message {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  text-align: center;
+  white-space: pre-line;
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.confirm-btn {
+  padding: 11px 0;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.confirm-btn.cancel {
+  background: var(--bg-card-elevated);
+  color: var(--text-secondary);
+}
+
+.confirm-btn.danger {
+  background: var(--overspend-red);
+  color: #fff;
+}

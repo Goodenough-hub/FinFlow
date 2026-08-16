@@ -15,6 +15,7 @@ import { chartColors } from '../utils/chartTheme'
 import { accountDisplayBalance } from '../utils/account'
 import { useTheme } from '../hooks/useTheme'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
 import AccountIcon from '../components/AccountIcon'
@@ -45,6 +46,7 @@ export default function AccountsPage() {
   const { list: allAccounts = [] } = useAccounts()
   const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
   const { effective } = useTheme()
+  const { confirm, confirmElement } = useConfirm()
 
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
   const [hideAmount, setHideAmount] = useState(false)
@@ -57,12 +59,12 @@ export default function AccountsPage() {
     if (acc.isSystem) return
     const children = allAccounts.filter(a => a.parentId === acc.id)
     if (children.length > 0) {
-      if (!confirm(`此账户下有 ${children.length} 个子账户，将一并删除。相关交易会保留但失去账户关联。继续？`)) return
+      if (!(await confirm(`此账户下有 ${children.length} 个子账户，将一并删除。相关交易会保留但失去账户关联。继续？`))) return
       for (const c of children) {
         await accountsApi.remove(c.id)
       }
     } else {
-      if (!confirm('删除此账户？相关交易将保留但失去账户关联。')) return
+      if (!(await confirm('删除此账户？相关交易将保留但失去账户关联。'))) return
     }
     await accountsApi.remove(acc.id)
     await refreshAccounts()
@@ -411,6 +413,8 @@ export default function AccountsPage() {
           onClose={() => setAddingChildFor(null)}
         />
       )}
+
+      {confirmElement}
     </div>
   )
 }
@@ -588,6 +592,7 @@ function AccountDialog({ state, onClose }: DialogProps) {
   const existing = isEdit ? state.account : undefined
 
   const { list: allAccounts = [] } = useAccounts()
+  const { confirm, confirmElement } = useConfirm()
 
   const initialType: AccountType = existing?.type ?? 'alipay'
   const [name, setName] = useState(existing?.name ?? '')
@@ -712,7 +717,7 @@ function AccountDialog({ state, onClose }: DialogProps) {
 
   const handleDelete = async () => {
     if (!existing) return
-    if (!confirm('删除此账户？相关交易将保留但失去账户关联。')) return
+    if (!(await confirm('删除此账户？相关交易将保留但失去账户关联。'))) return
     await accountsApi.remove(existing.id)
     await refreshAccounts()
     onClose()
@@ -987,6 +992,8 @@ function AccountDialog({ state, onClose }: DialogProps) {
           )}
         </div>
       </div>
+
+      {confirmElement}
     </div>
   )
 }

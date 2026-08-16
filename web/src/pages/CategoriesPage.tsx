@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Category, CategoryType } from '../db/models'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useCategories, refreshCategories } from '../hooks/useLookup'
 import { categoriesApi, transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
@@ -28,6 +29,7 @@ export default function CategoriesPage() {
   const navigate = useNavigate()
   const { list: allCategories = [] } = useCategories()
   const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
+  const { confirm, confirmElement } = useConfirm()
 
   const [activeType, setActiveType] = useState<CategoryType>('expense')
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -99,9 +101,9 @@ export default function CategoriesPage() {
       return
     }
     if (txCount > 0) {
-      if (!confirm(`此分类有 ${txCount} 笔交易关联，删除后交易将变为「未分类」。继续？`)) return
+      if (!(await confirm(`此分类有 ${txCount} 笔交易关联，删除后交易将变为「未分类」。继续？`))) return
     } else {
-      if (!confirm(`删除分类「${cat.name}」？`)) return
+      if (!(await confirm(`删除分类「${cat.name}」？`))) return
     }
     await categoriesApi.remove(cat.id)
     await refreshCategories()
@@ -212,6 +214,8 @@ export default function CategoriesPage() {
           onDelete={handleDelete}
         />
       )}
+
+      {confirmElement}
     </div>
   )
 }

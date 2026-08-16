@@ -6,6 +6,7 @@ import { toISODate, parseISODate } from '../utils/date'
 import { getLeafAccounts } from '../utils/account'
 import { computeNextDate } from '../services/recurring'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { useCategories, useAccounts } from '../hooks/useLookup'
 import { recurringApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
@@ -189,6 +190,7 @@ function RecurringDialog({ state, onClose, onSaved }: DialogProps) {
 
   const { list: allCategories = [] } = useCategories()
   const { list: allAccounts = [] } = useAccounts()
+  const { confirm, confirmElement } = useConfirm()
 
   const [type, setType] = useState<TransactionType>(existing?.type ?? 'expense')
   const [amountText, setAmountText] = useState(existing ? String(existing.amount) : '')
@@ -255,7 +257,7 @@ function RecurringDialog({ state, onClose, onSaved }: DialogProps) {
 
   const handleDelete = async () => {
     if (!existing) return
-    if (!confirm('删除此周期性交易模板？已生成的交易不受影响。')) return
+    if (!(await confirm('删除此周期性交易模板？已生成的交易不受影响。'))) return
     await recurringApi.remove(existing.id)
     onSaved()
     onClose()
@@ -433,6 +435,8 @@ function RecurringDialog({ state, onClose, onSaved }: DialogProps) {
           )}
         </div>
       </div>
+
+      {confirmElement}
     </div>
   )
 }

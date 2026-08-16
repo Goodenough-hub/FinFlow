@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useConfirm } from '../hooks/useConfirm'
 import { useTrips, refreshTrips } from '../hooks/useLookup'
 import { tripsApi } from '../api/finflow'
 import type { Trip } from '../db/models'
@@ -19,6 +20,7 @@ export default function TripPickerDialog({ onClose, onPick }: Props) {
   const [endDate, setEndDate] = useState('')
   const [busy, setBusy] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { confirm, confirmElement } = useConfirm()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -45,7 +47,7 @@ export default function TripPickerDialog({ onClose, onPick }: Props) {
   }
 
   const handleDelete = async (t: Trip) => {
-    if (!confirm(tripDeleteConfirmText(t.name))) return
+    if (!(await confirm(tripDeleteConfirmText(t.name)))) return
     setDeletingId(t.id)
     try {
       await tripsApi.remove(t.id)
@@ -124,6 +126,8 @@ export default function TripPickerDialog({ onClose, onPick }: Props) {
           </>
         )}
       </div>
+
+      {confirmElement}
     </div>
   )
 }

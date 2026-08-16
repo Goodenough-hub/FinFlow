@@ -7,6 +7,7 @@ import type { StatPeriod } from '../utils/date'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { asCurrency } from '../utils/format'
 import { useQuery } from '../hooks/useQuery'
+import { useConfirm } from '../hooks/useConfirm'
 import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
 import TransactionRow from '../components/TransactionRow'
@@ -49,6 +50,7 @@ export default function TransactionsPage() {
   const [daySheet, setDaySheet] = useState<{ date: Date; items: Transaction[] } | null>(null)
 
   const { data: allTransactions = [], reload } = useQuery(() => transactionsApi.list(), [])
+  const { confirm, confirmElement } = useConfirm()
 
   const periodTx = useMemo(
     () => filterByPeriod(allTransactions, period, date),
@@ -271,7 +273,7 @@ export default function TransactionsPage() {
                       transaction={t}
                       onNavigate={() => navigate(`/transactions/${t.id}`)}
                       onDelete={async () => {
-                        if (!confirm('删除此交易？')) return
+                        if (!(await confirm('删除此交易？'))) return
                         await transactionsApi.remove(t.id)
                         reload()
                       }}
@@ -310,6 +312,8 @@ export default function TransactionsPage() {
           onClose={() => setDaySheet(null)}
         />
       )}
+
+      {confirmElement}
     </div>
   )
 }
