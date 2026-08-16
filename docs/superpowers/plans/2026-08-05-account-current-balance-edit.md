@@ -12,7 +12,7 @@
 
 - 语言：所有面向用户文案用中文。
 - 提交前 FinFlow/web 必过 `npm run typecheck` + `npm test` + `npm run build`。
-- 提交信息中文，前缀 `feat(pwa):` / `fix(pwa):`；Git 身份须为 `Goodenough`（不得出现 `wwxq`）——本计划各步的 `git commit` 由用户或执行者按此身份提交。
+- 提交信息中文，前缀 `feat(pwa):` / `fix(pwa):`；Git 身份须为 `Goodenough <2323342501@qq.com>`——本计划各步的 `git commit` 由用户或执行者按此身份提交。
 - 金额沿用现有 `number` + 两位小数约定，反算只用加减法，不引入新精度处理。
 - 容器（有子账户的根账户）线上自身 `initialBalance` 均为 0；显示逻辑改为 `own + Σ子` 后数值不变。
 - 后端 `updateAccount` 已改为局部更新（只更新请求下发字段），本功能保存发部分字段依赖它一起部署。
