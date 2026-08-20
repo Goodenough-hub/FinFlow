@@ -131,19 +131,6 @@
   color: var(--text-secondary);
 }
 
-.account-dot {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .action-value {
   color: var(--text-tertiary);
   font-size: 15px;

@@ -7,7 +7,7 @@ import { useCategories, useAccounts } from '../hooks/useLookup'
 import { useConfirm } from '../hooks/useConfirm'
 import { transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
-import AccountIcon from '../components/AccountIcon'
+import AccountDot from '../components/AccountDot'
 import NumericKeypad from '../components/NumericKeypad'
 import { isTextEntryTarget } from '../utils/focus'
 import './TransactionFormPage.css'
@@ -361,7 +361,7 @@ export default function TransactionFormPage() {
                         onClick={() => setSelectedAccountId(group.parent!.id)}
                         disabled={toAccountId === group.parent.id}
                       >
-                        <AccountIcon type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
+                        <AccountDot type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
                         <span className="account-parent-name">{group.parent.name}</span>
                         <span className="account-parent-hint">主账户</span>
                       </button>
@@ -377,7 +377,7 @@ export default function TransactionFormPage() {
                             onClick={() => setSelectedAccountId(acc.id)}
                             disabled={disabled}
                           >
-                            <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
+                            <AccountDot type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
                             <span className="account-name">{acc.name}</span>
                           </button>
                         )
@@ -401,7 +401,7 @@ export default function TransactionFormPage() {
                         onClick={() => setToAccountId(group.parent!.id)}
                         disabled={selectedAccountId === group.parent.id}
                       >
-                        <AccountIcon type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
+                        <AccountDot type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
                         <span className="account-parent-name">{group.parent.name}</span>
                         <span className="account-parent-hint">主账户</span>
                       </button>
@@ -417,7 +417,7 @@ export default function TransactionFormPage() {
                             onClick={() => setToAccountId(acc.id)}
                             disabled={disabled}
                           >
-                            <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
+                            <AccountDot type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
                             <span className="account-name">{acc.name}</span>
                           </button>
                         )
@@ -441,7 +441,7 @@ export default function TransactionFormPage() {
                       className={`account-parent-row ${selectedAccountId === group.parent.id ? 'selected' : ''}`}
                       onClick={() => setSelectedAccountId(group.parent!.id)}
                     >
-                      <AccountIcon type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
+                      <AccountDot type={group.parent.type} icon={group.parent.icon} colorHex={group.parent.colorHex} size={32} />
                       <span className="account-parent-name">{group.parent.name}</span>
                       <span className="account-parent-hint">主账户</span>
                     </button>
@@ -455,7 +455,7 @@ export default function TransactionFormPage() {
                           className={`account-cell ${selected ? 'selected' : ''}`}
                           onClick={() => setSelectedAccountId(acc.id)}
                         >
-                          <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
+                          <AccountDot type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={36} />
                           <span className="account-name">{acc.name}</span>
                         </button>
                       )

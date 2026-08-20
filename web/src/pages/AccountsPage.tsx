@@ -18,7 +18,7 @@ import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
-import AccountIcon from '../components/AccountIcon'
+import AccountDot from '../components/AccountDot'
 import AddSubAccountDialog from '../components/AddSubAccountDialog'
 import './AccountsPage.css'
 
@@ -457,7 +457,7 @@ function AccountRowGroup({
         onDragEnd={onDragEnd}
         onClick={() => onNavigate(account.id)}
       >
-        <AccountIcon type={account.type} icon={account.icon} colorHex={account.colorHex} size={40} />
+        <AccountDot type={account.type} icon={account.icon} colorHex={account.colorHex} size={40} />
         <div className="account-info">
           <div className="account-name">{account.name}</div>
           <div className="account-type">{accountTypeLabel[account.type]}</div>
@@ -551,7 +551,7 @@ function InitialBalanceDialog({ accounts, onClose }: InitialBalanceDialogProps) 
                   className={`account-pick-row ${accountId === acc.id ? 'active' : ''}`}
                   onClick={() => selectAccount(acc.id)}
                 >
-                  <AccountIcon type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={32} />
+                  <AccountDot type={acc.type} icon={acc.icon} colorHex={acc.colorHex} size={32} />
                   <div className="account-pick-info">
                     <div className="account-pick-name">{acc.name}</div>
                     <div className="account-pick-balance">

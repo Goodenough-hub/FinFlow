@@ -10,7 +10,7 @@ import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
-import AccountIcon from '../components/AccountIcon'
+import AccountDot from '../components/AccountDot'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
 import AddSubAccountDialog from '../components/AddSubAccountDialog'
@@ -193,7 +193,7 @@ export default function AccountDetailPage() {
 
       <div className="card balance-card">
         <div className="balance-top">
-          <AccountIcon type={account.type} icon={account.icon} colorHex={account.colorHex} size={48} />
+          <AccountDot type={account.type} icon={account.icon} colorHex={account.colorHex} size={48} />
           <div className="balance-meta">
             <div className="balance-type">{accountTypeLabel[account.type]}</div>
             <div className={`balance-amount ${balance < 0 ? 'negative' : ''}`}>
@@ -227,7 +227,7 @@ export default function AccountDetailPage() {
                   className="account-row child"
                   onClick={() => navigate(`/accounts/${c.id}`)}
                 >
-                  <AccountIcon type={c.type} icon={c.icon} colorHex={c.colorHex} size={36} />
+                  <AccountDot type={c.type} icon={c.icon} colorHex={c.colorHex} size={36} />
                   <div className="account-info">
                     <div className="account-name">{c.name}</div>
                     <div className="account-type">{accountTypeLabel[c.type]}</div>
