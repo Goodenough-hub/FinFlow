@@ -12,6 +12,7 @@ import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLooku
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
 import { getLeafAccounts, getChildrenMap } from '../utils/account'
 import { asCurrency } from '../utils/format'
+import AccountIcon from '../components/AccountIcon'
 import AvatarPicker from '../components/AvatarPicker'
 import './SettingsPage.css'
 
@@ -228,12 +229,7 @@ export default function SettingsPage() {
               className="action-row"
               onClick={() => navigate(`/accounts/${a.id}`)}
             >
-              <span
-                className="account-dot"
-                style={{ background: a.colorHex || 'var(--accent-blue)' }}
-              >
-                {a.icon}
-              </span>
+              <AccountIcon type={a.type} icon={a.icon} colorHex={a.colorHex} size={32} />
               <span className="action-label">{a.name}</span>
               <span className="action-value">
                 {asCurrency(
