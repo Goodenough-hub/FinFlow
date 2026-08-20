@@ -48,18 +48,16 @@
 .form-body {
   flex: 1;
   padding: 16px;
-  /* 底部留出键盘 dock 的空间（4 行 keypad ≈ 248px + 上下 padding + safe-area），
-     防止最后一段被 dock 遮住。 */
-  padding-bottom: calc(300px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 24px;
   max-width: 640px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 原生键盘/选择器唤起时 dock 隐藏，底部不再预留空间 */
-.form-body.keypad-hidden {
-  padding-bottom: 24px;
+/* 金额聚焦、数字键盘 dock 显示时，底部留出键盘空间 */
+.form-body.with-keypad {
+  padding-bottom: calc(300px + env(safe-area-inset-bottom, 0px));
 }
 
 /* 数字键盘 dock：fixed 到视口底部。之前用 position: sticky + flex 布局

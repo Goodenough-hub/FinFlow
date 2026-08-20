@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Category, Transaction, TransactionType } from '../db/models'
 import { toISODate } from '../utils/date'
@@ -9,7 +9,6 @@ import { transactionsApi } from '../api/finflow'
 import CategoryIcon from '../components/CategoryIcon'
 import AccountDot from '../components/AccountDot'
 import NumericKeypad from '../components/NumericKeypad'
-import { isTextEntryTarget } from '../utils/focus'
 import './TransactionFormPage.css'
 
 // 按分类名弹出对应「平台」选择器（打车 App / 外卖平台）
@@ -44,8 +43,10 @@ export default function TransactionFormPage() {
   const [vendor, setVendor] = useState<string>('')
   const [tripId, setTripId] = useState<string | undefined>()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  // 原生键盘/选择器唤起时（备注、日期时间聚焦）隐藏自定义数字键盘，避免双键盘叠屏
-  const [entryFocused, setEntryFocused] = useState(false)
+  // 金额框聚焦时显示自定义数字键盘；失焦（选分类/写备注/日期）即收起，
+  // 备注等文本输入用系统原生键盘，避免双键盘叠屏。
+  const amountRef = useRef<HTMLInputElement>(null)
+  const [amountFocused, setAmountFocused] = useState(false)
   const { confirm, confirmElement } = useConfirm()
 
   useEffect(() => {
@@ -64,6 +65,11 @@ export default function TransactionFormPage() {
     setVendor(existing.vendor ?? '')
     setTripId(existing.tripId)
   }, [existing])
+
+  // 进入页面即聚焦金额，弹出数字键盘（快速记账）
+  useEffect(() => {
+    amountRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     if (!isEdit && !selectedAccountId && allAccounts.length) {
@@ -238,11 +244,7 @@ export default function TransactionFormPage() {
         </button>
       </header>
 
-      <div
-        className={`form-body${entryFocused ? ' keypad-hidden' : ''}`}
-        onFocus={e => { if (isTextEntryTarget(e.target)) setEntryFocused(true) }}
-        onBlur={e => { if (isTextEntryTarget(e.target)) setEntryFocused(false) }}
-      >
+      <div className={`form-body${amountFocused ? ' with-keypad' : ''}`}>
         <section className="form-section">
           <div className="type-segmented">
             <button className={type === 'expense' ? 'active' : ''} onClick={() => handleTypeChange('expense')}>
@@ -262,12 +264,15 @@ export default function TransactionFormPage() {
           <div className="amount-input-wrap">
             <span className="amount-currency">¥</span>
             <input
+              ref={amountRef}
               className="amount-input"
               type="text"
               inputMode="none"
               readOnly
               placeholder="0.00"
               value={amountText}
+              onFocus={() => setAmountFocused(true)}
+              onBlur={() => setAmountFocused(false)}
               onChange={() => { /* controlled by NumericKeypad */ }}
             />
           </div>
@@ -485,7 +490,7 @@ export default function TransactionFormPage() {
         )}
       </div>
 
-      {!entryFocused && (
+      {amountFocused && (
         <div className="form-keypad-dock">
           <NumericKeypad value={amountText} onChange={setAmountText} />
         </div>
