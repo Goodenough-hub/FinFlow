@@ -7,6 +7,11 @@ interface Props {
   size?: number
 }
 
+export function categoryIconUrl(filename: string, base = import.meta.env.BASE_URL): string {
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`
+  return `${normalizedBase}icons/categories/${filename}`
+}
+
 export default function CategoryIcon({ icon, color, size = 36 }: Props) {
   const brand = parseBrand(icon)
 
@@ -36,7 +41,7 @@ export default function CategoryIcon({ icon, color, size = 36 }: Props) {
       }
       return (
         <span style={containerStyle}>
-          <img src={`/icons/categories/${brand.logo}`} alt="" style={imgStyle} />
+          <img src={categoryIconUrl(brand.logo)} alt="" style={imgStyle} />
         </span>
       )
     }
@@ -44,6 +49,7 @@ export default function CategoryIcon({ icon, color, size = 36 }: Props) {
     // 优先级 2：单色 SVG (currentColor 线稿)，mask 上色为品牌色
     if (brand.svg) {
       const maskSize = size * 0.6
+      const maskUrl = categoryIconUrl(`${brand.svg}.svg`)
       const containerStyle: CSSProperties = {
         width: size,
         height: size,
@@ -60,11 +66,11 @@ export default function CategoryIcon({ icon, color, size = 36 }: Props) {
         width: maskSize,
         height: maskSize,
         backgroundColor: brand.color,
-        WebkitMaskImage: `url(/icons/categories/${brand.svg}.svg)`,
+        WebkitMaskImage: `url(${maskUrl})`,
         WebkitMaskRepeat: 'no-repeat',
         WebkitMaskPosition: 'center',
         WebkitMaskSize: 'contain',
-        maskImage: `url(/icons/categories/${brand.svg}.svg)`,
+        maskImage: `url(${maskUrl})`,
         maskRepeat: 'no-repeat',
         maskPosition: 'center',
         maskSize: 'contain'
