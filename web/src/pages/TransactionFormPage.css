@@ -1,11 +1,11 @@
 .form-page {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: var(--form-viewport-height, 100dvh);
+  min-height: 0;
   background: var(--bg-primary);
   display: flex;
   flex-direction: column;
-  /* 兜底：防止本页任何子元素意外撑出横向 scroll */
-  overflow-x: hidden;
+  overflow: hidden;
   width: 100%;
   max-width: 100%;
 }
@@ -47,6 +47,9 @@
 
 .form-body {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
   padding-bottom: 24px;
   max-width: 640px;

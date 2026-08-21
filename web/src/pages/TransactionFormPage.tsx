@@ -45,7 +45,9 @@ export default function TransactionFormPage() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   // 金额框聚焦时显示自定义数字键盘；失焦（选分类/写备注/日期）即收起，
   // 备注等文本输入用系统原生键盘，避免双键盘叠屏。
+  const pageRef = useRef<HTMLDivElement>(null)
   const amountRef = useRef<HTMLInputElement>(null)
+  const noteRef = useRef<HTMLTextAreaElement>(null)
   const [amountFocused, setAmountFocused] = useState(false)
   const { confirm, confirmElement } = useConfirm()
 
@@ -69,6 +71,30 @@ export default function TransactionFormPage() {
   // 进入页面即聚焦金额，弹出数字键盘（快速记账）
   useEffect(() => {
     amountRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+
+    const updateViewportHeight = () => {
+      pageRef.current?.style.setProperty('--form-viewport-height', `${viewport.height}px`)
+    }
+    const handleViewportResize = () => {
+      updateViewportHeight()
+      const note = noteRef.current
+      if (note && document.activeElement === note) {
+        note.scrollIntoView({ block: 'center' })
+      }
+    }
+
+    updateViewportHeight()
+    viewport.addEventListener('resize', handleViewportResize)
+    viewport.addEventListener('scroll', updateViewportHeight)
+    return () => {
+      viewport.removeEventListener('resize', handleViewportResize)
+      viewport.removeEventListener('scroll', updateViewportHeight)
+    }
   }, [])
 
   useEffect(() => {
@@ -231,7 +257,7 @@ export default function TransactionFormPage() {
   }
 
   return (
-    <div className="form-page">
+    <div ref={pageRef} className="form-page">
       <header className="form-header">
         <button className="form-header-btn" onClick={() => navigate(-1)}>取消</button>
         <span className="form-title">{isEdit ? '编辑' : '记一笔'}</span>
@@ -475,6 +501,7 @@ export default function TransactionFormPage() {
         <section className="form-section">
           <div className="section-label">备注</div>
           <textarea
+            ref={noteRef}
             className="form-textarea"
             placeholder="可选"
             rows={3}
