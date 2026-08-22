@@ -86,6 +86,12 @@ describe('expenseTree', () => {
     const byName = new Map(shoppingSubs.map(c => [c.name, c]))
     expect(byName.get('外卖')!.order).toBe(byName.get('抖音')!.order + 1)
   })
+
+  it('住房将水费和电费分开', () => {
+    const housingSubs = expenseTree.find(n => n.name === '住房')?.children ?? []
+    expect(housingSubs.map(c => c.name)).toEqual(['租金', '水费', '电费', '物业', '其他'])
+    expect(housingSubs.map(c => c.order)).toEqual([100, 101, 102, 103, 104])
+  })
 })
 
 describe('incomeTree', () => {

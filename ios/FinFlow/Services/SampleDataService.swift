@@ -103,11 +103,13 @@ enum SampleDataService {
         case "抖音":
             return (Decimal(randomIn: 20...500), ["直播", "商品", "团购"].randomElement()!)
         case "住房":
-            return (Decimal(randomIn: 2000...4500), ["房租", "水电费", "物业费"].randomElement()!)
+            return (Decimal(randomIn: 2000...4500), ["房租", "水费", "电费", "物业费"].randomElement()!)
         case "租金":
             return (Decimal(randomIn: 2000...4500), ["月租"].randomElement()!)
-        case "水电":
-            return (Decimal(randomIn: 50...500), ["水费", "电费", "燃气费"].randomElement()!)
+        case "水费":
+            return (Decimal(randomIn: 20...150), "水费")
+        case "电费":
+            return (Decimal(randomIn: 50...500), "电费")
         case "物业":
             return (Decimal(randomIn: 100...500), ["物业费"].randomElement()!)
         case "娱乐":

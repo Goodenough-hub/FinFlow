@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 enum SeedDataService {
-    private static let categoriesKey = "finflow.categories.seeded.v3"
+    private static let categoriesKey = "finflow.categories.seeded.v4"
     private static let accountsKey = "finflow.accounts.seeded.v1"
 
     static func seedIfNeeded(context: ModelContext) {
@@ -49,9 +49,10 @@ enum SeedDataService {
         ]),
         SeedNode("住房", "house.fill", "#10B981", 3, [
             SeedNode("租金", "key.fill", "#10B981", 100),
-            SeedNode("水电", "bolt.fill", "#F59E0B", 101),
-            SeedNode("物业", "building.2.fill", "#3B82F6", 102),
-            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 103),
+            SeedNode("水费", "drop.fill", "#06B6D4", 101),
+            SeedNode("电费", "bolt.fill", "#F59E0B", 102),
+            SeedNode("物业", "building.2.fill", "#3B82F6", 103),
+            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 104),
         ]),
         SeedNode("娱乐", "gamecontroller.fill", "#F59E0B", 4, [
             SeedNode("游戏", "gamecontroller.fill", "#F59E0B", 100, [
@@ -128,6 +129,29 @@ enum SeedDataService {
         for cat in existing where cat.name == "电影" {
             cat.name = "影视"
         }
+        // Preserve the category id so existing transactions and budgets remain linked.
+        if let housing = existing.first(where: { $0.name == "住房" && $0.parentID == nil && $0.isSystem }) {
+            let legacyUtilities = existing.filter { $0.name == "水电" && $0.parentID == housing.id && $0.isSystem }
+            var water = existing.first(where: { $0.name == "水费" && $0.parentID == housing.id })
+            for utilities in legacyUtilities {
+                if let water {
+                    moveCategoryReferences(from: utilities, to: water, context: context)
+                    context.delete(utilities)
+                } else {
+                    utilities.name = "水费"
+                    utilities.icon = "drop.fill"
+                    utilities.colorHex = "#06B6D4"
+                    utilities.sortOrder = 101
+                    water = utilities
+                }
+            }
+            if !legacyUtilities.isEmpty {
+                for category in existing where category.parentID == housing.id {
+                    if category.name == "物业" { category.sortOrder = 103 }
+                    if category.name == "其他" { category.sortOrder = 104 }
+                }
+            }
+        }
         try? context.save()
 
         insertTree(expenseTree, parent: nil, type: .expense, context: context)
@@ -155,6 +179,35 @@ enum SeedDataService {
             }
             if !node.children.isEmpty {
                 insertTree(node.children, parent: cat, type: type, context: context)
+            }
+        }
+    }
+
+    private static func moveCategoryReferences(from source: Category, to target: Category, context: ModelContext) {
+        let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+        for category in categories where category.parentID == source.id {
+            category.parentID = target.id
+        }
+
+        let transactions = (try? context.fetch(FetchDescriptor<Transaction>())) ?? []
+        for transaction in transactions where transaction.category?.id == source.id {
+            transaction.category = target
+        }
+
+        let recurring = (try? context.fetch(FetchDescriptor<RecurringTransaction>())) ?? []
+        for transaction in recurring where transaction.category?.id == source.id {
+            transaction.category = target
+        }
+
+        let budgets = (try? context.fetch(FetchDescriptor<Budget>())) ?? []
+        for budget in budgets where budget.category?.id == source.id {
+            if let existing = budgets.first(where: {
+                $0.category?.id == target.id && $0.year == budget.year && $0.month == budget.month
+            }) {
+                existing.amount += budget.amount
+                context.delete(budget)
+            } else {
+                budget.category = target
             }
         }
     }

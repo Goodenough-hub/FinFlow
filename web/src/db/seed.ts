@@ -40,9 +40,10 @@ export const expenseTree: SeedNode[] = [
   ]},
   { name: '住房', icon: '🏠', color: '#10B981', order: 3, children: [
     { name: '租金', icon: '🔑', color: '#10B981', order: 100 },
-    { name: '水电', icon: '⚡', color: '#F59E0B', order: 101 },
-    { name: '物业', icon: '🏢', color: '#3B82F6', order: 102 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 103 }
+    { name: '水费', icon: '💧', color: '#06B6D4', order: 101 },
+    { name: '电费', icon: '⚡', color: '#F59E0B', order: 102 },
+    { name: '物业', icon: '🏢', color: '#3B82F6', order: 103 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 104 }
   ]},
   { name: '娱乐', icon: '🎮', color: '#F59E0B', order: 4, children: [
     { name: '游戏', icon: '🎮', color: '#F59E0B', order: 100, children: [

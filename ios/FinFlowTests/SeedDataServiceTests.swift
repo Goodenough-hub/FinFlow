@@ -18,6 +18,7 @@ struct SeedDataServiceTests {
         defaults.removeObject(forKey: "finflow.categories.seeded.v1")
         defaults.removeObject(forKey: "finflow.categories.seeded.v2")
         defaults.removeObject(forKey: "finflow.categories.seeded.v3")
+        defaults.removeObject(forKey: "finflow.categories.seeded.v4")
         defaults.removeObject(forKey: "finflow.accounts.seeded.v1")
     }
 
@@ -31,12 +32,12 @@ struct SeedDataServiceTests {
         let categories = try context.fetch(FetchDescriptor<Category>())
         let accounts = try context.fetch(FetchDescriptor<Account>())
 
-        #expect(categories.count == 78)
+        #expect(categories.count == 79)
         #expect(accounts.count == 4)
 
         let expenseCount = categories.filter { $0.type == .expense }.count
         let incomeCount = categories.filter { $0.type == .income }.count
-        #expect(expenseCount == 70)
+        #expect(expenseCount == 71)
         #expect(incomeCount == 8)
     }
 
@@ -170,7 +171,7 @@ struct SeedDataServiceTests {
 
         let housing = categories.first { $0.name == "住房" && $0.parentID == nil }
         let housingSubs = categories.filter { $0.parentID == housing?.id }
-        #expect(Set(housingSubs.map(\.name)) == ["租金", "水电", "物业", "其他"])
+        #expect(Set(housingSubs.map(\.name)) == ["租金", "水费", "电费", "物业", "其他"])
     }
 
     @Test func seedIfNeeded_seedsInvestmentSubCategories() throws {
@@ -232,7 +233,7 @@ struct SeedDataServiceTests {
         let categories = try context.fetch(FetchDescriptor<Category>())
         let accounts = try context.fetch(FetchDescriptor<Account>())
 
-        #expect(categories.count == 78)
+        #expect(categories.count == 79)
         #expect(accounts.count == 4)
     }
 
@@ -253,5 +254,65 @@ struct SeedDataServiceTests {
         // 系统分类被补加
         #expect(categories.contains(where: { $0.name == "餐饮" && $0.isSystem == true }))
         #expect(categories.contains(where: { $0.name == "王者荣耀" && $0.isSystem == true }))
+    }
+
+    @Test func seedIfNeeded_existingUtilities_preservesIdAndAddsElectricity() throws {
+        resetSeedState()
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let housing = Category(name: "住房", type: .expense, icon: "house.fill", colorHex: "#10B981", isSystem: true)
+        let utilities = Category(name: "水电", type: .expense, icon: "bolt.fill", colorHex: "#F59E0B", sortOrder: 101, isSystem: true, parentID: housing.id)
+        let utilitiesID = utilities.id
+        let transaction = Transaction(amount: 88, type: .expense, category: utilities)
+        context.insert(housing)
+        context.insert(utilities)
+        context.insert(transaction)
+        try context.save()
+
+        SeedDataService.seedIfNeeded(context: context)
+
+        let categories = try context.fetch(FetchDescriptor<Category>())
+        let housingSubs = categories.filter { $0.parentID == housing.id }
+        #expect(housingSubs.contains(where: { $0.id == utilitiesID && $0.name == "水费" }))
+        #expect(housingSubs.contains(where: { $0.name == "电费" }))
+        #expect(!housingSubs.contains(where: { $0.name == "水电" }))
+        #expect(transaction.category?.id == utilitiesID)
+    }
+
+    @Test func seedIfNeeded_existingWater_mergesLegacyUtilityReferences() throws {
+        resetSeedState()
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let housing = Category(name: "住房", type: .expense, icon: "house.fill", colorHex: "#10B981", isSystem: true)
+        let utilities = Category(name: "水电", type: .expense, icon: "bolt.fill", colorHex: "#F59E0B", sortOrder: 101, isSystem: true, parentID: housing.id)
+        let water = Category(name: "水费", type: .expense, icon: "drop.fill", colorHex: "#06B6D4", sortOrder: 101, parentID: housing.id)
+        let utilityChild = Category(name: "燃气费", type: .expense, icon: "flame.fill", colorHex: "#EF4444", parentID: utilities.id)
+        let transaction = Transaction(amount: 88, type: .expense, category: utilities)
+        let budget = Budget(amount: 100, month: 8, year: 2026, category: utilities)
+        let recurring = RecurringTransaction(
+            amount: 50,
+            type: .expense,
+            rule: RecurrenceRule(frequency: .monthly, interval: 1, dayOfMonth: nil, dayOfWeek: nil),
+            startDate: .now,
+            category: utilities
+        )
+        context.insert(housing)
+        context.insert(utilities)
+        context.insert(water)
+        context.insert(utilityChild)
+        context.insert(transaction)
+        context.insert(budget)
+        context.insert(recurring)
+        try context.save()
+
+        SeedDataService.seedIfNeeded(context: context)
+
+        let categories = try context.fetch(FetchDescriptor<Category>())
+        #expect(categories.filter { $0.parentID == housing.id && $0.name == "水费" }.count == 1)
+        #expect(!categories.contains(where: { $0.parentID == housing.id && $0.name == "水电" }))
+        #expect(transaction.category?.id == water.id)
+        #expect(budget.category?.id == water.id)
+        #expect(recurring.category?.id == water.id)
+        #expect(utilityChild.parentID == water.id)
     }
 }
