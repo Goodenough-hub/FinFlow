@@ -20,6 +20,20 @@ interface Bucket {
   expense: number
 }
 
+interface TrendTooltipParam {
+  axisValue: number
+  seriesName: string
+  value: [number, number]
+}
+
+export function formatTrendTooltip(params: TrendTooltipParam[], xLabel: string): string {
+  const title = `${xLabel} ${params[0]?.axisValue ?? ''}`
+  const lines = params
+    .map(p => `${p.seriesName}: ¥${p.value[1].toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`)
+    .join('<br/>')
+  return `${title}<br/>${lines}`
+}
+
 export default function DailyBarChart({ transactions, period, date }: Props) {
   const { effective } = useTheme()
   const buckets = useMemo<Bucket[]>(() => {
@@ -66,13 +80,7 @@ export default function DailyBarChart({ transactions, period, date }: Props) {
         borderColor: c.tooltipBorder,
         borderWidth: 1,
         textStyle: { color: c.textPrimary, fontSize: 12 },
-        formatter: (params: Array<{ axisValue: number; seriesName: string; value: number }>) => {
-          const title = `${xLabel} ${params[0]?.axisValue ?? ''}`
-          const lines = params
-            .map(p => `${p.seriesName}: ¥${p.value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`)
-            .join('<br/>')
-          return `${title}<br/>${lines}`
-        }
+        formatter: (params: TrendTooltipParam[]) => formatTrendTooltip(params, xLabel)
       },
       legend: {
         data: ['收入', '支出'],
