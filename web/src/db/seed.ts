@@ -28,13 +28,14 @@ export const expenseTree: SeedNode[] = [
     { name: '公交', icon: '🚌', color: '#10B981', order: 101 },
     { name: '打车', icon: '🚕', color: '#F59E0B', order: 102 },
     { name: '高铁', icon: '🚄', color: '#6366F1', order: 103 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 104 }
+    { name: '电瓶车充电', icon: '🔋', color: '#10B981', order: 104 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 105 }
   ]},
   { name: '购物', icon: '🛍️', color: '#8B5CF6', order: 2, children: [
-    { name: '京东', icon: '📦', color: '#EF4444', order: 100 },
-    { name: '淘宝', icon: '🛍️', color: '#F59E0B', order: 101 },
-    { name: '拼多多', icon: '🛒', color: '#EF4444', order: 102 },
-    { name: '抖音', icon: '🎵', color: '#6B7280', order: 103 },
+    { name: '京东', icon: 'brand:jd', color: '#E1251B', order: 100 },
+    { name: '淘宝', icon: 'brand:taobao', color: '#FF6900', order: 101 },
+    { name: '拼多多', icon: 'brand:pinduoduo', color: '#E02E24', order: 102 },
+    { name: '抖音', icon: 'brand:douyin', color: '#000000', order: 103 },
     { name: '外卖', icon: '🛵', color: '#F97316', order: 104 },
     { name: '其他', icon: '⋯', color: '#6B7280', order: 105 }
   ]},
@@ -47,23 +48,23 @@ export const expenseTree: SeedNode[] = [
   ]},
   { name: '娱乐', icon: '🎮', color: '#F59E0B', order: 4, children: [
     { name: '游戏', icon: '🎮', color: '#F59E0B', order: 100, children: [
-      { name: '王者荣耀', icon: '👑', color: '#F59E0B', order: 201 },
-      { name: '和平精英', icon: '🎯', color: '#10B981', order: 202 },
-      { name: '原神', icon: '✨', color: '#3B82F6', order: 203 },
-      { name: 'Steam', icon: '🔥', color: '#EF4444', order: 204 },
+      { name: '王者荣耀', icon: 'brand:wangzhe', color: '#B99154', order: 201 },
+      { name: '和平精英', icon: 'brand:hepingjy', color: '#3E5C6E', order: 202 },
+      { name: '原神', icon: 'brand:yuanshen', color: '#E9BC5F', order: 203 },
+      { name: 'Steam', icon: 'brand:steam', color: '#1B2838', order: 204 },
       { name: '其他', icon: '⋯', color: '#6B7280', order: 205 }
     ]},
     { name: '影视', icon: '🎬', color: '#8B5CF6', order: 200, children: [
-      { name: '腾讯视频', icon: '📺', color: '#10B981', order: 301 },
-      { name: 'B站', icon: '▶️', color: '#EF4444', order: 302 },
-      { name: '爱奇艺', icon: '🎬', color: '#10B981', order: 303 },
+      { name: '腾讯视频', icon: 'brand:tencentvid', color: '#FF6022', order: 301 },
+      { name: 'B站', icon: 'brand:bilibili', color: '#00A1D6', order: 302 },
+      { name: '爱奇艺', icon: 'brand:iqiyi', color: '#00BE06', order: 303 },
       { name: '影院', icon: '🎟️', color: '#F59E0B', order: 304 },
       { name: '其他', icon: '⋯', color: '#6B7280', order: 305 }
     ]},
     { name: '音乐', icon: '🎵', color: '#06B6D4', order: 300, children: [
-      { name: 'Apple Music', icon: '🎵', color: '#EF4444', order: 401 },
-      { name: '网易云音乐', icon: '🎙️', color: '#EF4444', order: 402 },
-      { name: 'QQ音乐', icon: '🎶', color: '#3B82F6', order: 403 },
+      { name: 'Apple Music', icon: 'brand:applemusic', color: '#FA243C', order: 401 },
+      { name: '网易云音乐', icon: 'brand:neteasemus', color: '#C20C0C', order: 402 },
+      { name: 'QQ音乐', icon: 'brand:qqmusic', color: '#31C27C', order: 403 },
       { name: '其他', icon: '⋯', color: '#6B7280', order: 404 }
     ]},
     { name: '健身', icon: '🏃', color: '#10B981', order: 400, children: [
@@ -76,10 +77,10 @@ export const expenseTree: SeedNode[] = [
       { name: '其他', icon: '⋯', color: '#6B7280', order: 607 }
     ]},
     { name: '网盘', icon: '☁️', color: '#3B82F6', order: 500, children: [
-      { name: '百度网盘', icon: '☁️', color: '#3B82F6', order: 501 },
-      { name: '阿里网盘', icon: '☁️', color: '#F59E0B', order: 502 },
-      { name: '天翼网盘', icon: '☁️', color: '#EF4444', order: 503 },
-      { name: '夸克网盘', icon: '☁️', color: '#8B5CF6', order: 504 },
+      { name: '百度网盘', icon: 'brand:baiduyun', color: '#06A7FF', order: 501 },
+      { name: '阿里网盘', icon: 'brand:aliyunpan', color: '#FF6A00', order: 502 },
+      { name: '天翼网盘', icon: 'brand:tianyipan', color: '#EA1113', order: 503 },
+      { name: '夸克网盘', icon: 'brand:quarkpan', color: '#4A90FF', order: 504 },
       { name: '其他', icon: '⋯', color: '#6B7280', order: 505 }
     ]}
   ]},
@@ -97,7 +98,7 @@ export const expenseTree: SeedNode[] = [
     { name: '学费', icon: '💳', color: '#3B82F6', order: 102 },
     { name: '课程', icon: '📺', color: '#F59E0B', order: 103 },
     { name: '考试报名', icon: '📄', color: '#EF4444', order: 104 },
-    { name: '微信读书订阅', icon: '📖', color: '#10B981', order: 105 },
+    { name: '微信读书订阅', icon: 'brand:weread', color: '#24A5FF', order: 105 },
     { name: '其他', icon: '⋯', color: '#6B7280', order: 106 }
   ]},
   { name: '其他', icon: '⋯', color: '#6B7280', order: 7 }
@@ -106,13 +107,39 @@ export const expenseTree: SeedNode[] = [
 export const incomeTree: SeedNode[] = [
   { name: '工资', icon: '💰', color: '#10B981', order: 0 },
   { name: '投资', icon: '📈', color: '#3B82F6', order: 1, children: [
-    { name: '余额宝收益', icon: '💰', color: '#10B981', order: 100 },
-    { name: '零钱通收益', icon: '💵', color: '#10B981', order: 101 },
+    { name: '余额宝收益', icon: 'brand:alipay', color: '#1677FF', order: 100 },
+    { name: '零钱通收益', icon: 'brand:wechat', color: '#07C160', order: 101 },
     { name: '理财收益', icon: '📈', color: '#10B981', order: 102 },
     { name: '其他', icon: '⋯', color: '#6B7280', order: 103 }
   ]},
   { name: '兼职', icon: '💼', color: '#8B5CF6', order: 2 },
-  { name: '其他收入', icon: '⋯', color: '#6B7280', order: 3 }
+  { name: '退款', icon: '↩️', color: '#10B981', order: 3 },
+  { name: '报销', icon: '🧾', color: '#3B82F6', order: 4, children: [
+    { name: '公司报销', icon: '🏢', color: '#3B82F6', order: 100 },
+    { name: '学校报销', icon: '🎓', color: '#3B82F6', order: 101 },
+    { name: '其他报销', icon: '🧾', color: '#3B82F6', order: 102 }
+  ]},
+  { name: '他人转入', icon: '🤝', color: '#8B5CF6', order: 5 },
+  { name: '二手卖出', icon: '📦', color: '#F59E0B', order: 6, children: [
+    { name: '闲鱼', icon: 'brand:xianyu', color: '#FFE600', order: 100 },
+    { name: '爱回收', icon: 'brand:aihuishou', color: '#FFD100', order: 101 },
+    { name: '转转', icon: 'brand:zhuanzhuan', color: '#FF4B41', order: 102 },
+    { name: '线下回收', icon: '🏪', color: '#F59E0B', order: 103 },
+    { name: '熟人交易', icon: '🤝', color: '#F59E0B', order: 104 },
+    { name: '其他平台', icon: '📦', color: '#F59E0B', order: 105 }
+  ]},
+  { name: '礼金红包', icon: '🧧', color: '#EF4444', order: 7, children: [
+    { name: '节日红包', icon: '🧧', color: '#EF4444', order: 100 },
+    { name: '生日红包', icon: '🎂', color: '#EF4444', order: 101 },
+    { name: '礼金', icon: '🎁', color: '#EF4444', order: 102 },
+    { name: '其他', icon: '⋯', color: '#EF4444', order: 103 }
+  ]},
+  { name: '奖励返现', icon: '🎉', color: '#10B981', order: 8, children: [
+    { name: '活动奖励', icon: '🎉', color: '#10B981', order: 100 },
+    { name: '消费返现', icon: '💰', color: '#10B981', order: 101 },
+    { name: '其他', icon: '⋯', color: '#10B981', order: 102 }
+  ]},
+  { name: '其他收入', icon: '⋯', color: '#6B7280', order: 9 }
 ]
 
 const defaultAccounts: Array<{ type: AccountType; order: number }> = [
@@ -126,8 +153,8 @@ const SEED_FLAG_KEY = 'finflow.web.seeded.v1'
 const INVESTMENT_CHILDREN_KEY = 'finflow.web.investment.children.v1'
 
 const investmentChildren: SeedNode[] = [
-  { name: '余额宝收益', icon: '💰', color: '#10B981', order: 100 },
-  { name: '零钱通收益', icon: '💵', color: '#10B981', order: 101 },
+  { name: '余额宝收益', icon: 'brand:alipay', color: '#1677FF', order: 100 },
+  { name: '零钱通收益', icon: 'brand:wechat', color: '#07C160', order: 101 },
   { name: '理财收益', icon: '📈', color: '#10B981', order: 102 },
   { name: '其他', icon: '⋯', color: '#6B7280', order: 103 }
 ]

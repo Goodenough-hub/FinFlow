@@ -10,6 +10,12 @@ describe('CategoryIcon 品牌资源路径', () => {
     ['brand:jd', 'jd.ico'],
     ['brand:taobao', 'taobao.ico'],
     ['brand:douyin', 'douyin.ico'],
+    ['brand:xianyu', 'xianyu.png'],
+    ['brand:aihuishou', 'aihuishou.png'],
+    ['brand:zhuanzhuan', 'zhuanzhuan.ico'],
+    ['brand:weread', 'weread.png'],
+    ['brand:alipay', 'alipay.ico'],
+    ['brand:wechat', 'wechat.ico'],
   ])('%s 使用 FinFlow base 路径', (icon, filename) => {
     expect(categoryIconUrl(filename, '/finflow/'))
       .toBe(`/finflow/icons/categories/${filename}`)

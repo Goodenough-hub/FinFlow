@@ -115,7 +115,26 @@ describe('incomeTree', () => {
     }
   })
 
-  it('顶级收入分类仍为 4 个', () => {
-    expect(incomeTree.map(n => n.name)).toEqual(['工资', '投资', '兼职', '其他收入'])
+  it('顶级收入包含新增分类且其他收入放在最后', () => {
+    expect(incomeTree.map(n => n.name)).toEqual(['工资', '投资', '兼职', '退款', '报销', '他人转入', '二手卖出', '礼金红包', '奖励返现', '其他收入'])
+  })
+})
+
+
+describe('新增日常分类', () => {
+  it('交通只新增电瓶车充电，放在其他之前', () => {
+    expect(expenseTree.find(n => n.name === '交通')?.children?.map(n => n.name))
+      .toEqual(['地铁', '公交', '打车', '高铁', '电瓶车充电', '其他'])
+  })
+
+  it.each([
+    ['报销', ['公司报销', '学校报销', '其他报销']],
+    ['二手卖出', ['闲鱼', '爱回收', '转转', '线下回收', '熟人交易', '其他平台']],
+    ['礼金红包', ['节日红包', '生日红包', '礼金', '其他']],
+    ['奖励返现', ['活动奖励', '消费返现', '其他']]
+  ])('%s 包含选定的子分类且无重复', (name, expected) => {
+    const children = incomeTree.find(n => n.name === name)?.children ?? []
+    expect(children.map(n => n.name)).toEqual(expected)
+    expect(new Set(children.map(n => n.order)).size).toBe(children.length)
   })
 })

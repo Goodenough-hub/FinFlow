@@ -25,6 +25,16 @@ export const CATEGORY_BRANDS: Record<string, BrandDef> = {
   pinduoduo:  { name: '拼多多',     color: '#E02E24', svg: 'pinduoduo' },
   douyin:     { name: '抖音',       color: '#000000', logo: 'douyin.ico' },
 
+  // 二手交易
+  xianyu:     { name: '闲鱼', color: '#FFE600', logo: 'xianyu.png' },
+  aihuishou:  { name: '爱回收', color: '#FFD100', logo: 'aihuishou.png' },
+  zhuanzhuan: { name: '转转', color: '#FF4B41', logo: 'zhuanzhuan.ico' },
+
+  // 阅读与收益所属平台
+  weread:     { name: '微信读书', color: '#24A5FF', logo: 'weread.png' },
+  alipay:     { name: '支付宝', color: '#1677FF', logo: 'alipay.ico' },
+  wechat:     { name: '微信', color: '#07C160', logo: 'wechat.ico' },
+
   // 游戏
   wangzhe:    { name: '王者荣耀',   color: '#B99154', logo: 'wangzhe.ico' },
   hepingjy:   { name: '和平精英',   color: '#3E5C6E', logo: 'hepingjy.ico' },
@@ -50,6 +60,16 @@ export const CATEGORY_BRANDS: Record<string, BrandDef> = {
 
 // 分类中文名 → 品牌 slug 反向映射。用于 seed 迁移和 UI 层根据 category.name 智能识别。
 export const CATEGORY_NAME_TO_BRAND: Record<string, string> = {
+  '闲鱼': 'xianyu',
+  '爱回收': 'aihuishou',
+  '转转': 'zhuanzhuan',
+  '微信读书订阅': 'weread',
+  '微信读书': 'weread',
+  '余额宝收益': 'alipay',
+  '零钱通收益': 'wechat',
+  '阿里云盘': 'aliyunpan',
+  '天翼云盘': 'tianyipan',
+  '哔哩哔哩': 'bilibili',
   '京东': 'jd',
   '淘宝': 'taobao',
   '拼多多': 'pinduoduo',
