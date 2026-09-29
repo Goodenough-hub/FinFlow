@@ -1,0 +1,71 @@
+/* 全屏模态层负责拦截背景触摸，底部面板不与表单滚动层竞争 z-index。 */
+.amount-keypad-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.amount-keypad-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.amount-keypad-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.amount-keypad-panel {
+  flex: 0 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg-card);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.amount-keypad-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.amount-keypad-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.amount-keypad-done {
+  min-height: 44px;
+  padding: 8px 12px;
+  color: var(--accent-blue);
+  font-size: 16px;
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.amount-keypad-value {
+  display: block;
+  margin: 8px 0 16px;
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}

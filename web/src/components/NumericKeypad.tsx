@@ -21,11 +21,7 @@ export default function NumericKeypad({
   submitDisabled = false,
 }: Props) {
   return (
-    <div
-      className="keypad"
-      onPointerDown={e => e.preventDefault()}
-      onMouseDown={e => e.preventDefault()}
-    >
+    <div className="keypad">
       <div className="keypad-grid">
         {KEYS.map(k => (
           <button

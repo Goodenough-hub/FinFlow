@@ -26,6 +26,8 @@ dev-dist/
 *.local
 .vite/
 .eslintcache
+web/test-results/
+web/playwright-report/
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js
