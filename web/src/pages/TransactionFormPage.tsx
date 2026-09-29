@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Category, Transaction, TransactionType } from '../db/models'
 import { toISODate } from '../utils/date'
+import { isTextEntryTarget } from '../utils/focus'
 import { useQuery } from '../hooks/useQuery'
 import { useCategories, useAccounts } from '../hooks/useLookup'
 import { useConfirm } from '../hooks/useConfirm'
@@ -43,12 +44,12 @@ export default function TransactionFormPage() {
   const [vendor, setVendor] = useState<string>('')
   const [tripId, setTripId] = useState<string | undefined>()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  // 金额框聚焦时显示自定义数字键盘；失焦（选分类/写备注/日期）即收起，
-  // 备注等文本输入用系统原生键盘，避免双键盘叠屏。
+  // 键盘显隐不依赖 readOnly 金额框的焦点，避免 iOS 触摸时 blur 先于 click
+  // 导致键盘被卸载。点其他区域或系统输入控件时再显式收起。
   const pageRef = useRef<HTMLDivElement>(null)
   const amountRef = useRef<HTMLInputElement>(null)
   const noteRef = useRef<HTMLTextAreaElement>(null)
-  const [amountFocused, setAmountFocused] = useState(false)
+  const [keypadOpen, setKeypadOpen] = useState(true)
   const { confirm, confirmElement } = useConfirm()
 
   useEffect(() => {
@@ -79,6 +80,8 @@ export default function TransactionFormPage() {
 
     const updateViewportHeight = () => {
       pageRef.current?.style.setProperty('--form-viewport-height', `${viewport.height}px`)
+      const offset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+      pageRef.current?.style.setProperty('--form-keypad-offset', `${offset}px`)
     }
     const handleViewportResize = () => {
       updateViewportHeight()
@@ -257,7 +260,19 @@ export default function TransactionFormPage() {
   }
 
   return (
-    <div ref={pageRef} className="form-page">
+    <div
+      ref={pageRef}
+      className="form-page"
+      onFocusCapture={e => {
+        if (isTextEntryTarget(e.target)) setKeypadOpen(false)
+      }}
+      onPointerDown={e => {
+        const target = e.target
+        if (!(target instanceof Element)) return
+        if (target.closest('.form-keypad-dock') || target.closest('.amount-input-wrap')) return
+        setKeypadOpen(false)
+      }}
+    >
       <header className="form-header">
         <button className="form-header-btn" onClick={() => navigate(-1)}>取消</button>
         <span className="form-title">{isEdit ? '编辑' : '记一笔'}</span>
@@ -270,7 +285,7 @@ export default function TransactionFormPage() {
         </button>
       </header>
 
-      <div className={`form-body${amountFocused ? ' with-keypad' : ''}`}>
+      <div className={`form-body${keypadOpen ? ' with-keypad' : ''}`}>
         <section className="form-section">
           <div className="type-segmented">
             <button className={type === 'expense' ? 'active' : ''} onClick={() => handleTypeChange('expense')}>
@@ -297,8 +312,8 @@ export default function TransactionFormPage() {
               readOnly
               placeholder="0.00"
               value={amountText}
-              onFocus={() => setAmountFocused(true)}
-              onBlur={() => setAmountFocused(false)}
+              onFocus={() => setKeypadOpen(true)}
+              onPointerDown={() => setKeypadOpen(true)}
               onChange={() => { /* controlled by NumericKeypad */ }}
             />
           </div>
@@ -517,7 +532,7 @@ export default function TransactionFormPage() {
         )}
       </div>
 
-      {amountFocused && (
+      {keypadOpen && (
         <div className="form-keypad-dock">
           <NumericKeypad value={amountText} onChange={setAmountText} />
         </div>

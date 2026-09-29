@@ -38,6 +38,7 @@ function mockVisualViewport(height: number) {
   let resizeListener: EventListener | undefined
   const viewport = {
     height,
+    offsetTop: 0,
     addEventListener: vi.fn((type: string, listener: EventListener) => {
       if (type === 'resize') resizeListener = listener
     }),
@@ -63,27 +64,36 @@ describe('TransactionFormPage 自定义键盘显隐', () => {
     expect(keypadDock()).toBeTruthy()
   })
 
-  it('金额聚焦显示键盘，失焦收起（键盘不常驻）', () => {
+  it('金额失焦不会卸载键盘，数字点击仍能完成输入', () => {
     renderPage()
     fireEvent.blur(amountInput())
-    expect(keypadDock()).toBeNull()
-    fireEvent.focus(amountInput())
     expect(keypadDock()).toBeTruthy()
-    fireEvent.blur(amountInput())
+
+    const key = screen.getByRole('button', { name: '1' })
+    fireEvent.pointerDown(key)
+    fireEvent.click(key)
+
+    expect(amountInput().value).toBe('1')
+    expect(keypadDock()).toBeTruthy()
+  })
+
+  it('点击键盘外的分类区域时收起键盘', () => {
+    renderPage()
+    fireEvent.pointerDown(screen.getByText('暂无分类，请先在设置中创建'))
+
     expect(keypadDock()).toBeNull()
   })
 
   it('聚焦备注/日期时键盘收起（回归：双键盘叠屏）', () => {
     renderPage()
-    fireEvent.blur(amountInput())
-    expect(keypadDock()).toBeNull()
-
     const note = screen.getByPlaceholderText('可选')
-    fireEvent.focus(note)
+    fireEvent.focusIn(note)
     expect(keypadDock()).toBeNull()
 
+    fireEvent.focus(amountInput())
+    expect(keypadDock()).toBeTruthy()
     const date = document.querySelector('input[type="date"]')!
-    fireEvent.focus(date)
+    fireEvent.focusIn(date)
     expect(keypadDock()).toBeNull()
   })
 })
@@ -98,11 +108,13 @@ describe('TransactionFormPage 系统键盘适配', () => {
     const note = screen.getByPlaceholderText('可选')
     Object.defineProperty(note, 'scrollIntoView', { value: scrollIntoView })
     expect(page.style.getPropertyValue('--form-viewport-height')).toBe('800px')
+    expect(page.style.getPropertyValue('--form-keypad-offset')).toBe('0px')
 
     note.focus()
     visualViewport.resize(420)
 
     expect(page.style.getPropertyValue('--form-viewport-height')).toBe('420px')
+    expect(page.style.getPropertyValue('--form-keypad-offset')).toBe(`${window.innerHeight - 420}px`)
     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center' })
 
     unmount()

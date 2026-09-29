@@ -1,0 +1,28 @@
+// @vitest-environment jsdom
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import NumericKeypad from './NumericKeypad'
+
+afterEach(cleanup)
+
+describe('NumericKeypad 触摸输入', () => {
+  it('触摸数字键时阻止默认焦点转移，但仍能输入数字', () => {
+    const onChange = vi.fn()
+    render(<NumericKeypad value="" onChange={onChange} />)
+    const key = screen.getByRole('button', { name: '1' })
+
+    expect(fireEvent.pointerDown(key)).toBe(false)
+    fireEvent.click(key)
+
+    expect(onChange).toHaveBeenCalledWith('1')
+  })
+
+  it('退格键删除末位数字', () => {
+    const onChange = vi.fn()
+    render(<NumericKeypad value="12" onChange={onChange} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '退格' }))
+
+    expect(onChange).toHaveBeenCalledWith('1')
+  })
+})
