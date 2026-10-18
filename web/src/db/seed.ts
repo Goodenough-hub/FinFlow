@@ -37,7 +37,8 @@ export const expenseTree: SeedNode[] = [
     { name: '拼多多', icon: 'brand:pinduoduo', color: '#E02E24', order: 102 },
     { name: '抖音', icon: 'brand:douyin', color: '#000000', order: 103 },
     { name: '外卖', icon: '🛵', color: '#F97316', order: 104 },
-    { name: '其他', icon: '⋯', color: '#6B7280', order: 105 }
+    { name: '礼品卡/优惠券', icon: '🎁', color: '#EC4899', order: 105 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 106 }
   ]},
   { name: '住房', icon: '🏠', color: '#10B981', order: 3, children: [
     { name: '租金', icon: '🔑', color: '#10B981', order: 100 },

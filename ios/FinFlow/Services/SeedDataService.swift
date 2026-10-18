@@ -45,7 +45,8 @@ enum SeedDataService {
             SeedNode("淘宝", "bag.fill", "#F59E0B", 101),
             SeedNode("拼多多", "cart.fill", "#EF4444", 102),
             SeedNode("抖音", "music.note", "#6B7280", 103),
-            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 104),
+            SeedNode("礼品卡/优惠券", "giftcard.fill", "#EC4899", 104),
+            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 105),
         ]),
         SeedNode("住房", "house.fill", "#10B981", 3, [
             SeedNode("租金", "key.fill", "#10B981", 100),

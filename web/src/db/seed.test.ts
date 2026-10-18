@@ -96,6 +96,13 @@ describe('expenseTree', () => {
     expect(byName.get('外卖')!.order).toBe(byName.get('抖音')!.order + 1)
   })
 
+  it('购物包含「礼品卡/优惠券」，位于外卖之后、其他之前', () => {
+    const subs = expenseTree.find(n => n.name === '购物')?.children ?? []
+    const names = subs.map(c => c.name)
+    expect(names.indexOf('礼品卡/优惠券')).toBe(names.indexOf('外卖') + 1)
+    expect(names.indexOf('礼品卡/优惠券')).toBeLessThan(names.indexOf('其他'))
+  })
+
   it('住房将水费和电费分开', () => {
     const housingSubs = expenseTree.find(n => n.name === '住房')?.children ?? []
     expect(housingSubs.map(c => c.name)).toEqual(['租金', '水费', '电费', '物业', '其他'])
