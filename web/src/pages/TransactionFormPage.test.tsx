@@ -179,6 +179,39 @@ describe('TransactionFormPage 模态金额键盘', () => {
     expect(dialog.open).toBe(false)
     expect(document.querySelector('.amount-keypad-dialog')).toBeNull()
   })
+
+  it('防重提交：连续点击保存只调用一次 API', async () => {
+    let resolveCreate: (val?: any) => void
+    vi.mocked(transactionsApi.create).mockImplementation(
+      () => new Promise(resolve => { resolveCreate = resolve })
+    )
+
+    renderPage()
+    // 隐藏数字键盘输入金额 10
+    fireEvent.click(screen.getByRole('button', { name: '完成' }))
+    fireEvent.click(amountInput())
+    fireEvent.click(screen.getByRole('button', { name: '1' }))
+    fireEvent.click(screen.getByRole('button', { name: '0' }))
+    fireEvent.click(screen.getByRole('button', { name: '完成' }))
+    // 选择分类
+    fireEvent.click(screen.getByText('餐饮'))
+
+    const saveBtn = screen.getByRole('button', { name: '保存' }) as HTMLButtonElement
+    expect(saveBtn.disabled).toBe(false)
+
+    // 连续点击两次保存
+    fireEvent.click(saveBtn)
+    fireEvent.click(saveBtn)
+
+    // 断言只发起了一次网络请求，并且按钮进入提交中禁用态
+    expect(transactionsApi.create).toHaveBeenCalledTimes(1)
+    const submittingBtn = screen.getByRole('button', { name: '保存中...' }) as HTMLButtonElement
+    expect(submittingBtn.disabled).toBe(true)
+
+    await act(async () => {
+      resolveCreate!()
+    })
+  })
 })
 
 describe('TransactionFormPage 系统键盘适配', () => {

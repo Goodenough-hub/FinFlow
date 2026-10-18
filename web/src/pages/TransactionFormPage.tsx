@@ -48,6 +48,7 @@ export default function TransactionFormPage() {
   const amountRef = useRef<HTMLInputElement>(null)
   const noteRef = useRef<HTMLTextAreaElement>(null)
   const [keypadOpen, setKeypadOpen] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const { confirm, confirmElement } = useConfirm()
 
   useEffect(() => {
@@ -200,21 +201,53 @@ export default function TransactionFormPage() {
   }
 
   const handleSave = async () => {
+    if (submitting) return
     const value = parseFloat(amountText.replace(',', '.'))
     if (!Number.isFinite(value) || value <= 0) return
 
-    if (isTransfer) {
-      if (!selectedAccountId || !toAccountId || selectedAccountId === toAccountId) return
+    setSubmitting(true)
+    try {
+      if (isTransfer) {
+        if (!selectedAccountId || !toAccountId || selectedAccountId === toAccountId) {
+          setSubmitting(false)
+          return
+        }
+        const payload: Partial<Transaction> = {
+          amount: value,
+          type,
+          note,
+          date,
+          time,
+          accountId: selectedAccountId,
+          toAccountId,
+          categoryId: undefined,
+          vendor: undefined,
+          tripId
+        }
+        if (existing) {
+          await transactionsApi.update(existing.id, payload)
+        } else {
+          await transactionsApi.create(payload as Omit<Transaction, 'id' | 'createdAt'>)
+        }
+        navigate(-1)
+        return
+      }
+
+      if (!selectedCategoryId) {
+        setSubmitting(false)
+        return
+      }
+      const vendorValue = showVendorPicker && vendor ? vendor : undefined
       const payload: Partial<Transaction> = {
         amount: value,
         type,
         note,
         date,
         time,
+        categoryId: selectedCategoryId,
         accountId: selectedAccountId,
-        toAccountId,
-        categoryId: undefined,
-        vendor: undefined,
+        toAccountId: undefined,
+        vendor: vendorValue,
         tripId
       }
       if (existing) {
@@ -223,29 +256,10 @@ export default function TransactionFormPage() {
         await transactionsApi.create(payload as Omit<Transaction, 'id' | 'createdAt'>)
       }
       navigate(-1)
-      return
+    } catch (err) {
+      setSubmitting(false)
+      throw err
     }
-
-    if (!selectedCategoryId) return
-    const vendorValue = showVendorPicker && vendor ? vendor : undefined
-    const payload: Partial<Transaction> = {
-      amount: value,
-      type,
-      note,
-      date,
-      time,
-      categoryId: selectedCategoryId,
-      accountId: selectedAccountId,
-      toAccountId: undefined,
-      vendor: vendorValue,
-      tripId
-    }
-    if (existing) {
-      await transactionsApi.update(existing.id, payload)
-    } else {
-      await transactionsApi.create(payload as Omit<Transaction, 'id' | 'createdAt'>)
-    }
-    navigate(-1)
   }
 
   const handleDelete = async () => {
@@ -263,9 +277,9 @@ export default function TransactionFormPage() {
         <button
           className="form-header-btn primary"
           onClick={handleSave}
-          disabled={!isSavable}
+          disabled={!isSavable || submitting}
         >
-          保存
+          {submitting ? '保存中...' : '保存'}
         </button>
       </header>
 
