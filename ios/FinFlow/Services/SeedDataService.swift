@@ -90,6 +90,8 @@ enum SeedDataService {
                 SeedNode("夸克网盘", "externaldrive.connected.to.line.below.fill", "#8B5CF6", 504),
                 SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 505),
             ]),
+            SeedNode("景区门票", "ticket.fill", "#F59E0B", 550),
+            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 600),
         ]),
         SeedNode("医疗", "cross.case.fill", "#EF4444", 5, [
             SeedNode("挂号", "cross.case.fill", "#EF4444", 100),

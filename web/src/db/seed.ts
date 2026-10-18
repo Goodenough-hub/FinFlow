@@ -82,7 +82,9 @@ export const expenseTree: SeedNode[] = [
       { name: '天翼网盘', icon: 'brand:tianyipan', color: '#EA1113', order: 503 },
       { name: '夸克网盘', icon: 'brand:quarkpan', color: '#4A90FF', order: 504 },
       { name: '其他', icon: '⋯', color: '#6B7280', order: 505 }
-    ]}
+    ]},
+    { name: '景区门票', icon: '🎟️', color: '#F59E0B', order: 550 },
+    { name: '其他', icon: '⋯', color: '#6B7280', order: 600 }
   ]},
   { name: '医疗', icon: '⚕️', color: '#EF4444', order: 5, children: [
     { name: '挂号', icon: '⚕️', color: '#EF4444', order: 100 },

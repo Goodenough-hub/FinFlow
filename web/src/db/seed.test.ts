@@ -67,6 +67,15 @@ describe('expenseTree', () => {
     expect(byName.get('影院')!.order).toBe(byName.get('爱奇艺')!.order + 1)
   })
 
+  it('娱乐包含「景区门票」且位于网盘之后、其他之前', () => {
+    const ent = expenseTree.find(n => n.name === '娱乐')
+    const subs = ent?.children ?? []
+    const idx = new Map(subs.map((c, i) => [c.name, i]))
+    expect(idx.get('景区门票')).toBeDefined()
+    expect(idx.get('网盘')!).toBeLessThan(idx.get('景区门票')!)
+    expect(idx.get('景区门票')!).toBeLessThan(idx.get('其他')!)
+  })
+
   it('餐饮包含「外卖」，位于饮料之后、聚餐AA之前', () => {
     const idx = new Map(diningSubs.map((c, i) => [c.name, i]))
     expect(idx.get('外卖')).toBeDefined()
