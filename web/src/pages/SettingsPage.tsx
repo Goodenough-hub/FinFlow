@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FolderTree, Target, Repeat, Plane, BarChart3, Download, FileText, Database, Sparkles, Trash2, Smartphone } from 'lucide-react'
+import { FolderTree, Target, Repeat, Plane, BarChart3, Download, FileText, Database, Sparkles, Trash2, Smartphone, RefreshCw } from 'lucide-react'
 import type { Account, Category, Transaction } from '../db/models'
 import { useAuth } from '../contexts/AuthContext'
 import { usePWA } from '../hooks/usePWA'
@@ -26,7 +26,28 @@ export default function SettingsPage() {
   const { mode: theme, setThemeMode } = useTheme()
   const [busy, setBusy] = useState(false)
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const { confirm, confirmElement } = useConfirm()
+
+  const handleForceRefresh = async () => {
+    if (refreshing) return
+    setRefreshing(true)
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        await Promise.all(keys.map(k => caches.delete(k)))
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(regs.map(r => r.update()))
+      }
+    } catch (e) {
+      console.error('强制刷新失败:', e)
+    } finally {
+      const cleanUrl = window.location.origin + window.location.pathname + '?_t=' + Date.now()
+      window.location.replace(cleanUrl)
+    }
+  }
 
   const childrenMap = useMemo(() => getChildrenMap(accs), [accs])
 
@@ -385,6 +406,13 @@ export default function SettingsPage() {
               {offline ? '离线' : '在线'}
             </strong>
           </div>
+          <button className="action-row" disabled={refreshing} onClick={handleForceRefresh}>
+            <span className="action-icon">
+              <RefreshCw size={20} strokeWidth={2} className={refreshing ? 'spinning' : ''} />
+            </span>
+            <span className="action-label">{refreshing ? '正在检查并刷新…' : '强制刷新（清除缓存）'}</span>
+            <span className="action-chevron">›</span>
+          </button>
           {canInstall && !installed && (
             <button className="action-row" onClick={install}>
               <span className="action-icon"><Smartphone size={20} strokeWidth={2} /></span>

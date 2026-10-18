@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, cleanup } from '@testing-library/react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import type { Account } from '../db/models'
 import SettingsPage from './SettingsPage'
@@ -78,5 +78,35 @@ describe('我的页账户图标用 account-dot 文字圆', () => {
     expect(dot?.textContent).toContain('支')
     // 不应渲染账户 SVG
     expect(container.querySelector('img[src*="/icons/accounts/"]')).toBeNull()
+  })
+})
+
+describe('我的页强制刷新能力', () => {
+  beforeEach(() => cleanup())
+
+  it('渲染强制刷新按钮并可点击触发清除缓存', async () => {
+    const deleteMock = vi.fn().mockResolvedValue(true)
+    const keysMock = vi.fn().mockResolvedValue(['cache-v1', 'cache-v2'])
+    const replaceMock = vi.fn()
+
+    Object.defineProperty(window, 'caches', {
+      configurable: true,
+      value: { keys: keysMock, delete: deleteMock }
+    })
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, replace: replaceMock }
+    })
+
+    const { getByText } = renderPage()
+    const refreshBtn = getByText('强制刷新（清除缓存）')
+    expect(refreshBtn).not.toBeNull()
+
+    fireEvent.click(refreshBtn)
+
+    expect(keysMock).toHaveBeenCalled()
+    await Promise.resolve()
+    expect(deleteMock).toHaveBeenCalledWith('cache-v1')
+    expect(deleteMock).toHaveBeenCalledWith('cache-v2')
   })
 })
