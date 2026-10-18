@@ -125,6 +125,9 @@ export default function ImportPage() {
           toAccountId,
           vendor: r.vendor
         })
+        if (skipDuplicates) {
+          existingKeys.add(`${r.date}|${r.amount}|${r.type}|${r.note ?? ''}`)
+        }
         imported++
       }
 
