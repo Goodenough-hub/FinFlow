@@ -131,6 +131,46 @@
 .cal-income { color: var(--income-green); }
 .cal-expense { color: var(--expense-gold); }
 
+/* 日历流水独立约束，避免其他页面的通用 dialog 样式覆盖安全区布局。 */
+.day-sheet-overlay {
+  --day-sheet-safe-top: env(safe-area-inset-top, 0px);
+  --day-sheet-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --day-sheet-safe-left: env(safe-area-inset-left, 0px);
+  --day-sheet-safe-right: env(safe-area-inset-right, 0px);
+  padding: calc(var(--day-sheet-safe-top) + 12px)
+    var(--day-sheet-safe-right) 0 var(--day-sheet-safe-left);
+}
+
+.day-sheet-overlay .day-sheet {
+  min-height: 0;
+  max-height: min(90vh, calc(100vh - var(--day-sheet-safe-top) - 12px));
+  max-height: min(90dvh, calc(100dvh - var(--day-sheet-safe-top) - 12px));
+  padding-bottom: var(--day-sheet-safe-bottom);
+  overflow: hidden;
+}
+
+.day-sheet .dialog-header {
+  flex-shrink: 0;
+}
+
+.day-sheet .dialog-header .dialog-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-sheet .dialog-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.day-sheet .dialog-body > * {
+  flex-shrink: 0;
+}
+
 .day-sheet-summary {
   display: flex;
   background: var(--bg-card-elevated);

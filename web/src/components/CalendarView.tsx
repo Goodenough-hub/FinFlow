@@ -139,8 +139,13 @@ export function DailyTransactionSheet({ date, transactions, onClose }: DaySheetP
   const label = `${date.getMonth() + 1}月${date.getDate()}日`
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
-      <div className="dialog-sheet" onClick={e => e.stopPropagation()}>
+    <div className="dialog-overlay day-sheet-overlay" onClick={onClose}>
+      <div
+        className="dialog-sheet day-sheet"
+        role="dialog"
+        aria-label={`${label} 流水`}
+        onClick={e => e.stopPropagation()}
+      >
         <div className="dialog-header">
           <button className="dialog-btn" onClick={onClose}>关闭</button>
           <span className="dialog-title">{label} 流水</span>
