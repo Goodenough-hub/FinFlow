@@ -156,14 +156,23 @@ html, body, #root {
 }
 
 /* 防止任何子元素意外触发页面级横向滚动（部分 Android 浏览器如小米/HyperOS
-   会记住非零横向 scroll 位置，导致整页向左偏移，iOS Safari 会自动阻止）。 */
+   会记住非零横向 scroll 位置，导致整页向左偏移，iOS Safari 会自动阻止）。
+   必须用 clip 而不是 hidden：overflow-x: hidden 会把 body 变成滚动容器
+   （overflow-y 的 visible 被强制计算为 auto），纵向滚动从视口移到 body 上，
+   iOS 主屏幕 PWA 里视口无滚动可滚，WKWebView 会对整个页面做上下左右橡皮筋
+   拖动。clip 只是裁切、不创建滚动容器，纵向滚动留在视口。hidden 行是
+   不支持 clip 的旧浏览器的回退（维持原行为，不更差）。 */
 html, body {
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
 html {
   background: var(--bg-primary);
+  /* 橡皮筋抑制要挂在视口滚动器的来源（根元素）上才生效；
+     body 上的同名声明保留，兼容从 body 传播的浏览器。 */
+  overscroll-behavior-y: none;
 }
 
 body {
