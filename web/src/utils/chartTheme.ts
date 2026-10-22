@@ -55,3 +55,8 @@ export function clearChartThemeCache() {
   cache = null
   cachedTheme = ''
 }
+
+/** 图表入场/更新动画。遵循系统减少动态效果设置（与 global.css 的 reduced-motion 一致）。 */
+export function chartAnimationEnabled(): boolean {
+  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}

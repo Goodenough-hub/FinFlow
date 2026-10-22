@@ -10,7 +10,7 @@ import {
   siblingsOf
 } from '../utils/category'
 import { asCurrency, formatPercent } from '../utils/format'
-import { chartColors } from '../utils/chartTheme'
+import { chartColors, chartAnimationEnabled } from '../utils/chartTheme'
 import { useTheme } from '../hooks/useTheme'
 import { useCategories } from '../hooks/useLookup'
 import CategoryIcon from './CategoryIcon'
@@ -19,6 +19,8 @@ import './CategoryAnalysis.css'
 interface Props {
   transactions: Transaction[]
   type: TransactionType
+  /** 点击叶子分类（无子分类）时触发，用于跳转交易明细 */
+  onLeafClick?: (category: Category) => void
 }
 
 const UNCATEGORIZED_ID = '__uncategorized__'
@@ -42,7 +44,7 @@ interface RowItem {
   drillable: boolean
 }
 
-export default function CategoryAnalysis({ transactions, type }: Props) {
+export default function CategoryAnalysis({ transactions, type, onLeafClick }: Props) {
   const { list: allCategories = [] } = useCategories()
   useTheme()
   const [drillPath, setDrillPath] = useState<Category[]>([])
@@ -119,6 +121,7 @@ export default function CategoryAnalysis({ transactions, type }: Props) {
 
   const c = chartColors()
   const pieOption = {
+    animation: chartAnimationEnabled(),
     tooltip: {
       trigger: 'item',
       backgroundColor: c.tooltipBg,
@@ -151,8 +154,12 @@ export default function CategoryAnalysis({ transactions, type }: Props) {
   }
 
   const onRowClick = (item: RowItem) => {
-    if (!item.drillable || !item.category) return
-    setDrillPath(prev => [...prev, item.category!])
+    if (!item.category) return
+    if (item.drillable) {
+      setDrillPath(prev => [...prev, item.category!])
+    } else {
+      onLeafClick?.(item.category)
+    }
   }
 
   const onBreadcrumbClick = (idx: number) => {
@@ -211,10 +218,12 @@ export default function CategoryAnalysis({ transactions, type }: Props) {
             lazyUpdate
           />
           <div className="breakdown-list">
-            {items.map((item, idx) => (
+            {items.map((item, idx) => {
+              const clickable = item.drillable || (!!onLeafClick && !!item.category)
+              return (
               <div
                 key={item.id}
-                className={`breakdown-row ${item.drillable ? 'clickable' : ''}`}
+                className={`breakdown-row ${clickable ? 'clickable' : ''}`}
                 onClick={() => onRowClick(item)}
               >
                 <CategoryIcon icon={item.icon} color={item.color} size={32} />
@@ -241,10 +250,11 @@ export default function CategoryAnalysis({ transactions, type }: Props) {
                     />
                   </div>
                 </div>
-                {item.drillable && <span className="breakdown-chevron">›</span>}
+                {clickable && <span className="breakdown-chevron">›</span>}
                 {idx < items.length - 1 && <div className="breakdown-divider" />}
               </div>
-            ))}
+              )
+            })}
           </div>
           <div className="category-total">
             <span className="total-label">合计</span>

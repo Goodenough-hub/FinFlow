@@ -1,0 +1,51 @@
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* 抵消 .home-page .card 的统一 margin-bottom，网格间距由 gap 控制 */
+.kpi-grid .card.kpi-cell {
+  margin-bottom: 0;
+}
+
+.kpi-cell {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  /* 金额位数多时收窄而不是溢出 */
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.kpi-change {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.kpi-change.good {
+  color: var(--income-green);
+}
+
+.kpi-change.bad {
+  color: var(--overspend-red);
+}
+
+.kpi-change.muted {
+  color: var(--text-tertiary);
+}

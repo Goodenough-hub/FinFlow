@@ -1,22 +1,22 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
-import type { TransactionType } from '../db/models'
-import { filterByPeriod } from '../utils/date'
+import type { Category, TransactionType } from '../db/models'
+import { filterByPeriod, stepPeriod } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
+import { periodTotals } from '../utils/stats'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
 import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
-import SummaryCard from '../components/SummaryCard'
-import MonthCompare from '../components/MonthCompare'
+import KpiGrid from '../components/KpiGrid'
+import IncomeAllocationBar from '../components/IncomeAllocationBar'
+import TrendChart from '../components/TrendChart'
 import BudgetOverview from '../components/BudgetOverview'
-import DailyBarChart from '../components/DailyBarChart'
 import CategoryAnalysis from '../components/CategoryAnalysis'
 import TransactionRow from '../components/TransactionRow'
 import EmptyState from '../components/EmptyState'
 import OverspendAlertBanner from '../components/OverspendAlertBanner'
-import DailyReportList from '../components/DailyReportList'
 import './HomePage.css'
 
 export default function HomePage() {
@@ -32,20 +32,31 @@ export default function HomePage() {
     [allTransactions, period, date]
   )
 
-  const totals = useMemo(() => {
-    let income = 0
-    let expense = 0
-    for (const t of filtered) {
-      if (t.type === 'income') income += t.amount
-      else if (t.type === 'expense') expense += t.amount
-    }
-    return { income, expense, balance: income - expense }
-  }, [filtered])
+  const totals = useMemo(
+    () => periodTotals(allTransactions, period, date),
+    [allTransactions, period, date]
+  )
+  const prevTotals = useMemo(
+    () => periodTotals(allTransactions, period, stepPeriod(date, period, -1)),
+    [allTransactions, period, date]
+  )
 
   const recent = useMemo(
     () => [...allTransactions].sort(compareTransactionsByDateTimeDesc).slice(0, 5),
     [allTransactions]
   )
+
+  const onCategoryLeafClick = (category: Category) => {
+    const params = new URLSearchParams({ categoryId: category.id })
+    if (period === 'month') {
+      params.set('period', 'month')
+      params.set('month', `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
+    } else {
+      params.set('period', 'year')
+      params.set('year', String(date.getFullYear()))
+    }
+    navigate(`/transactions?${params.toString()}`)
+  }
 
   return (
     <div className="page home-page">
@@ -61,13 +72,13 @@ export default function HomePage() {
         onDateChange={setDate}
       />
 
-      <SummaryCard income={totals.income} expense={totals.expense} balance={totals.balance} />
+      <KpiGrid current={totals} previous={prevTotals} period={period} />
 
-      <MonthCompare transactions={allTransactions} period={period} date={date} />
+      <IncomeAllocationBar income={totals.income} expense={totals.expense} />
 
       <OverspendAlertBanner />
 
-      <BudgetOverview />
+      <TrendChart transactions={allTransactions} />
 
       {filtered.length === 0 ? (
         <div className="card">
@@ -79,30 +90,31 @@ export default function HomePage() {
           />
         </div>
       ) : (
-        <>
-          <DailyBarChart transactions={filtered} period={period} date={date} />
-
-          <div className="card category-section">
-            <div className="type-tab">
-              <button
-                className={categoryTab === 'expense' ? 'active' : ''}
-                onClick={() => setCategoryTab('expense')}
-              >
-                支出
-              </button>
-              <button
-                className={categoryTab === 'income' ? 'active' : ''}
-                onClick={() => setCategoryTab('income')}
-              >
-                收入
-              </button>
-            </div>
-            <CategoryAnalysis key={categoryTab} transactions={filtered} type={categoryTab} />
+        <div className="card category-section">
+          <div className="type-tab">
+            <button
+              className={categoryTab === 'expense' ? 'active' : ''}
+              onClick={() => setCategoryTab('expense')}
+            >
+              支出
+            </button>
+            <button
+              className={categoryTab === 'income' ? 'active' : ''}
+              onClick={() => setCategoryTab('income')}
+            >
+              收入
+            </button>
           </div>
-
-          {period === 'month' && <DailyReportList transactions={filtered} />}
-        </>
+          <CategoryAnalysis
+            key={categoryTab}
+            transactions={filtered}
+            type={categoryTab}
+            onLeafClick={onCategoryLeafClick}
+          />
+        </div>
       )}
+
+      <BudgetOverview />
 
       <section className="recent-section">
         <div className="section-header">

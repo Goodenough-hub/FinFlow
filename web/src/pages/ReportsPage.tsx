@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react'
 import type { Account, Transaction } from '../db/models'
 import { asCurrency, formatCompact } from '../utils/format'
 import { yearString, monthYearString } from '../utils/date'
-import { chartColors } from '../utils/chartTheme'
+import { chartColors, chartAnimationEnabled } from '../utils/chartTheme'
 import { useTheme } from '../hooks/useTheme'
 import { useQuery } from '../hooks/useQuery'
 import { useCategories, useAccounts } from '../hooks/useLookup'
@@ -89,6 +89,7 @@ export default function ReportsPage() {
       else if (t.type === 'expense') expenseData[m] += t.amount
     }
     return {
+      animation: chartAnimationEnabled(),
       grid: { left: 44, right: 16, top: 24, bottom: 28 },
       tooltip: {
         trigger: 'axis',
@@ -198,6 +199,7 @@ export default function ReportsPage() {
     }
     const currentIdx = 5
     return {
+      animation: chartAnimationEnabled(),
       grid: { left: 44, right: 16, top: 28, bottom: 28 },
       tooltip: {
         trigger: 'axis',
@@ -315,6 +317,7 @@ export default function ReportsPage() {
     })
 
     return {
+      animation: chartAnimationEnabled(),
       grid: { left: 48, right: 16, top: 28, bottom: 28 },
       tooltip: {
         trigger: 'axis',
@@ -371,6 +374,7 @@ export default function ReportsPage() {
   const weekdayOption = useMemo(() => {
     const c = chartColors()
     return {
+      animation: chartAnimationEnabled(),
       grid: { left: 44, right: 16, top: 16, bottom: 24 },
       tooltip: {
         trigger: 'axis',

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { List, Calendar, SlidersHorizontal, Plane, Search } from 'lucide-react'
 import type { Transaction, TransactionType } from '../db/models'
 import { filterByPeriod, parseISODate } from '../utils/date'
@@ -39,12 +39,25 @@ const TYPE_FILTERS: Array<{ key: TypeFilter; label: string }> = [
 
 export default function TransactionsPage() {
   const navigate = useNavigate()
-  const [period, setPeriod] = useState<StatPeriod>('month')
-  const [date, setDate] = useState<Date>(new Date())
+  const [searchParams] = useSearchParams()
+  // 支持从看板下钻进入：/transactions?categoryId=x&period=month&month=2026-10（或 period=year&year=2026）
+  const [period, setPeriod] = useState<StatPeriod>(() =>
+    searchParams.get('period') === 'year' ? 'year' : 'month'
+  )
+  const [date, setDate] = useState<Date>(() => {
+    const raw = searchParams.get('period') === 'year'
+      ? `${searchParams.get('year')}-01-01`
+      : `${searchParams.get('month')}-01`
+    const parsed = raw && !raw.startsWith('null') ? parseISODate(raw) : new Date(NaN)
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed
+  })
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all')
   const [keyword, setKeyword] = useState('')
-  const [criteria, setCriteria] = useState<FilterCriteria>(emptyCriteria())
+  const [criteria, setCriteria] = useState<FilterCriteria>(() => {
+    const categoryId = searchParams.get('categoryId')
+    return categoryId ? { ...emptyCriteria(), categoryIds: [categoryId] } : emptyCriteria()
+  })
   const [showFilter, setShowFilter] = useState(false)
   const [showTripPicker, setShowTripPicker] = useState(false)
   const [daySheet, setDaySheet] = useState<{ date: Date; items: Transaction[] } | null>(null)

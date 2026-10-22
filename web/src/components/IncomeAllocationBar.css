@@ -1,0 +1,72 @@
+.alloc-card {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.alloc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.alloc-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.alloc-legend {
+  display: flex;
+  gap: 12px;
+}
+
+.alloc-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.alloc-legend-item.overspent {
+  color: var(--overspend-red);
+  font-weight: 600;
+}
+
+.alloc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.alloc-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-card-elevated);
+}
+
+.alloc-seg {
+  height: 100%;
+  transition: width 0.4s var(--ease-out);
+}
+
+.alloc-seg.expense {
+  background: var(--expense-gold);
+  border-radius: 6px 0 0 6px;
+}
+
+.alloc-seg.saving {
+  background: var(--income-green);
+  border-radius: 0 6px 6px 0;
+}
+
+.alloc-caption {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
