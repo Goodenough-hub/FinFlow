@@ -111,7 +111,13 @@ enum SeedDataService {
             SeedNode("微信读书订阅", "book.closed.fill", "#10B981", 105),
             SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 106),
         ]),
-        SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 7),
+        SeedNode("社保公积金", "checkmark.shield.fill", "#0EA5E9", 7, [
+            SeedNode("医疗保险", "cross.fill", "#3B82F6", 100),
+            SeedNode("养老保险", "banknote.fill", "#F59E0B", 101),
+            SeedNode("商业保险", "doc.plaintext.fill", "#8B5CF6", 102),
+            SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 103),
+        ]),
+        SeedNode("其他", "ellipsis.circle.fill", "#6B7280", 8),
     ]
 
     private static let incomeTree: [SeedNode] = [

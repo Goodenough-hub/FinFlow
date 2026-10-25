@@ -32,12 +32,12 @@ struct SeedDataServiceTests {
         let categories = try context.fetch(FetchDescriptor<Category>())
         let accounts = try context.fetch(FetchDescriptor<Account>())
 
-        #expect(categories.count == 79)
+        #expect(categories.count == 84)
         #expect(accounts.count == 4)
 
         let expenseCount = categories.filter { $0.type == .expense }.count
         let incomeCount = categories.filter { $0.type == .income }.count
-        #expect(expenseCount == 71)
+        #expect(expenseCount == 76)
         #expect(incomeCount == 8)
     }
 
@@ -148,6 +148,24 @@ struct SeedDataServiceTests {
         #expect(medical != nil)
         let subs = categories.filter { $0.parentID == medical?.id }
         #expect(Set(subs.map(\.name)) == ["挂号", "药品", "体检", "牙科", "眼科", "其他"])
+        #expect(subs.allSatisfy { $0.isSystem })
+        #expect(subs.allSatisfy { $0.type == .expense })
+    }
+
+    @Test func seedIfNeeded_seedsSocialInsuranceSubCategories() throws {
+        resetSeedState()
+        let container = try makeContainer()
+        let context = ModelContext(container)
+
+        SeedDataService.seedIfNeeded(context: context)
+
+        let categories = try context.fetch(FetchDescriptor<Category>())
+        let root = categories.first { $0.name == "社保公积金" && $0.parentID == nil }
+        #expect(root != nil)
+        #expect(root?.type == .expense)
+        #expect(root?.isSystem == true)
+        let subs = categories.filter { $0.parentID == root?.id }
+        #expect(Set(subs.map(\.name)) == ["医疗保险", "养老保险", "商业保险", "其他"])
         #expect(subs.allSatisfy { $0.isSystem })
         #expect(subs.allSatisfy { $0.type == .expense })
     }
