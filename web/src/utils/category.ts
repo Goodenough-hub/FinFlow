@@ -31,12 +31,19 @@ export function amountForCategory(
   transactions: Transaction[],
   type: TransactionType
 ): number {
-  const ids = collectDescendantIds(cat.id, all)
-  ids.add(cat.id)
-  return transactions
-    .filter(t => t.type === type)
-    .filter(t => t.categoryId != null && ids.has(t.categoryId))
+  return transactionsForCategory(cat.id, all, transactions, type)
     .reduce((sum, t) => sum + t.amount, 0)
+}
+
+export function transactionsForCategory(
+  categoryId: string,
+  all: Category[],
+  transactions: Transaction[],
+  type: TransactionType
+): Transaction[] {
+  const ids = collectDescendantIds(categoryId, all)
+  ids.add(categoryId)
+  return transactions.filter(t => t.type === type && t.categoryId != null && ids.has(t.categoryId))
 }
 
 export function countForCategory(
@@ -45,12 +52,7 @@ export function countForCategory(
   transactions: Transaction[],
   type: TransactionType
 ): number {
-  const ids = collectDescendantIds(cat.id, all)
-  ids.add(cat.id)
-  return transactions
-    .filter(t => t.type === type)
-    .filter(t => t.categoryId != null && ids.has(t.categoryId))
-    .length
+  return transactionsForCategory(cat.id, all, transactions, type).length
 }
 
 export function directParentAmount(

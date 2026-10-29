@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import type { Category, Transaction, TransactionType } from '../db/models'
 import {
@@ -6,7 +6,6 @@ import {
   countForCategory,
   directParentAmount,
   directParentCount,
-  hasChildren,
   siblingsOf
 } from '../utils/category'
 import { asCurrency, formatPercent } from '../utils/format'
@@ -19,8 +18,8 @@ import './CategoryAnalysis.css'
 interface Props {
   transactions: Transaction[]
   type: TransactionType
-  /** 点击叶子分类（无子分类）时触发，用于跳转交易明细 */
-  onLeafClick?: (category: Category) => void
+  parentCategory?: Category
+  onCategoryClick: (category: Category) => void
 }
 
 const UNCATEGORIZED_ID = '__uncategorized__'
@@ -41,15 +40,12 @@ interface RowItem {
   amount: number
   count: number
   category?: Category
-  drillable: boolean
 }
 
-export default function CategoryAnalysis({ transactions, type, onLeafClick }: Props) {
+export default function CategoryAnalysis({ transactions, type, parentCategory, onCategoryClick }: Props) {
   const { list: allCategories = [] } = useCategories()
   useTheme()
-  const [drillPath, setDrillPath] = useState<Category[]>([])
-
-  const currentParent = drillPath[drillPath.length - 1]
+  const currentParent = parentCategory
 
   const siblings = useMemo(
     () => siblingsOf(currentParent?.id, type, allCategories),
@@ -76,7 +72,7 @@ export default function CategoryAnalysis({ transactions, type, onLeafClick }: Pr
       if (direct > 0) {
         list.push({
           id: UNCATEGORIZED_ID,
-          name: '未分类',
+          name: '直接记入本分类',
           color: '#636366',
           amount: direct
         })
@@ -94,8 +90,7 @@ export default function CategoryAnalysis({ transactions, type, onLeafClick }: Pr
         icon: c.icon,
         amount: amountForCategory(c, allCategories, transactions, type),
         count: countForCategory(c, allCategories, transactions, type),
-        category: c,
-        drillable: hasChildren(c.id, allCategories)
+        category: c
       }))
       .filter(r => r.amount > 0)
     if (currentParent) {
@@ -103,19 +98,18 @@ export default function CategoryAnalysis({ transactions, type, onLeafClick }: Pr
       if (direct > 0) {
         list.push({
           id: UNCATEGORIZED_ID,
-          name: '未分类',
+          name: '直接记入本分类',
           color: '#636366',
           icon: '⋯',
           amount: direct,
-          count: directParentCount(currentParent.id, transactions, type),
-          drillable: false
+          count: directParentCount(currentParent.id, transactions, type)
         })
       }
     }
     return list.sort((a, b) => b.amount - a.amount)
   }, [siblings, allCategories, transactions, type, currentParent])
 
-  if (siblings.length === 0 && drillPath.length === 0) return null
+  if (siblings.length === 0 && !currentParent) return null
 
   const typeLabel = type === 'income' ? '收入' : '支出'
 
@@ -153,60 +147,18 @@ export default function CategoryAnalysis({ transactions, type, onLeafClick }: Pr
     ]
   }
 
-  const onRowClick = (item: RowItem) => {
-    if (!item.category) return
-    if (item.drillable) {
-      setDrillPath(prev => [...prev, item.category!])
-    } else {
-      onLeafClick?.(item.category)
-    }
-  }
-
-  const onBreadcrumbClick = (idx: number) => {
-    setDrillPath(prev => (idx === -1 ? [] : prev.slice(0, idx + 1)))
-  }
-
   const percentage = (amount: number) => (total > 0 ? (amount / total) * 100 : 0)
 
   return (
     <div className="card category-card">
       <div className="category-header">
-        <span className="category-section-title">{typeLabel}分类占比</span>
-      </div>
-
-      <div className="breadcrumb">
-        <button
-          className={`crumb ${drillPath.length === 0 ? 'active' : ''}`}
-          onClick={() => onBreadcrumbClick(-1)}
-          disabled={drillPath.length === 0}
-        >
-          📊 <span>全部</span>
-        </button>
-        {drillPath.map((cat, idx) => {
-          const isLast = idx === drillPath.length - 1
-          return (
-            <span key={cat.id} className="crumb-wrap">
-              <span className="crumb-sep">›</span>
-              <button
-                className={`crumb ${isLast ? 'active' : ''}`}
-                onClick={() => onBreadcrumbClick(idx)}
-              >
-                {cat.name}
-              </button>
-            </span>
-          )
-        })}
+        <span className="category-section-title">{currentParent ? '子分类占比' : `${typeLabel}分类占比`}</span>
       </div>
 
       {total === 0 ? (
         <div className="category-empty">
           <div className="category-empty-icon">🥧</div>
           <div>本层级暂无交易</div>
-          {drillPath.length > 0 && (
-            <button className="back-btn" onClick={() => onBreadcrumbClick(drillPath.length - 2)}>
-              返回上一层
-            </button>
-          )}
         </div>
       ) : (
         <>
@@ -219,40 +171,42 @@ export default function CategoryAnalysis({ transactions, type, onLeafClick }: Pr
           />
           <div className="breakdown-list">
             {items.map((item, idx) => {
-              const clickable = item.drillable || (!!onLeafClick && !!item.category)
+              const clickable = !!item.category
               return (
-              <div
-                key={item.id}
-                className={`breakdown-row ${clickable ? 'clickable' : ''}`}
-                onClick={() => onRowClick(item)}
-              >
-                <CategoryIcon icon={item.icon} color={item.color} size={32} />
-                <div className="breakdown-content">
-                  <div className="breakdown-top">
-                    <span className="breakdown-name">{item.name}</span>
-                    <span
-                      className="breakdown-amount"
-                      style={{ color: type === 'income' ? 'var(--income-green)' : 'var(--expense-gold)' }}
-                    >
-                      {asCurrency(item.amount)}
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={!clickable}
+                  className={`breakdown-row ${clickable ? 'clickable' : ''}`}
+                  onClick={() => item.category && onCategoryClick(item.category)}
+                >
+                  <CategoryIcon icon={item.icon} color={item.color} size={32} />
+                  <span className="breakdown-content">
+                    <span className="breakdown-top">
+                      <span className="breakdown-name">{item.name}</span>
+                      <span
+                        className="breakdown-amount"
+                        style={{ color: type === 'income' ? 'var(--income-green)' : 'var(--expense-gold)' }}
+                      >
+                        {asCurrency(item.amount)}
+                      </span>
                     </span>
-                  </div>
-                  <div className="breakdown-meta">
-                    {item.count} 笔 · {formatPercent(percentage(item.amount))}
-                  </div>
-                  <div className="breakdown-bar">
-                    <div
-                      className="breakdown-bar-fill"
-                      style={{
-                        width: `${percentage(item.amount)}%`,
-                        background: item.color
-                      }}
-                    />
-                  </div>
-                </div>
-                {clickable && <span className="breakdown-chevron">›</span>}
-                {idx < items.length - 1 && <div className="breakdown-divider" />}
-              </div>
+                    <span className="breakdown-meta">
+                      {item.count} 笔 · {formatPercent(percentage(item.amount))}
+                    </span>
+                    <span className="breakdown-bar">
+                      <span
+                        className="breakdown-bar-fill"
+                        style={{
+                          width: `${percentage(item.amount)}%`,
+                          background: item.color
+                        }}
+                      />
+                    </span>
+                  </span>
+                  {clickable && <span className="breakdown-chevron">›</span>}
+                  {idx < items.length - 1 && <span className="breakdown-divider" />}
+                </button>
               )
             })}
           </div>

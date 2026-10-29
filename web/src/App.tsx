@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
+import CategoryDetailPage from './pages/CategoryDetailPage'
 import TransactionsPage from './pages/TransactionsPage'
 import AccountsPage from './pages/AccountsPage'
 import AccountDetailPage from './pages/AccountDetailPage'
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="/accounts/:id" element={<AccountDetailPage />} />
+          <Route path="/analysis/categories/:id" element={<CategoryDetailPage />} />
           <Route path="/transactions/new" element={<TransactionFormPage />} />
           <Route path="/transactions/:id" element={<TransactionFormPage />} />
           <Route path="/categories" element={<CategoriesPage />} />

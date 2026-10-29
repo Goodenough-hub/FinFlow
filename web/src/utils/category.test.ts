@@ -8,7 +8,8 @@ import {
   countForCategory,
   directParentAmount,
   directParentCount,
-  categoryById
+  categoryById,
+  transactionsForCategory
 } from './category'
 
 function makeCat(id: string, type: 'income' | 'expense', parentId?: string, sortOrder = 0): Category {
@@ -45,6 +46,28 @@ describe('category utils', () => {
     makeCat('lunch-company', 'expense', 'lunch', 0),
     makeCat('salary', 'income', undefined, 0)
   ]
+
+  describe('transactionsForCategory', () => {
+    const txs = [
+      makeTx('direct', 'expense', 10, 'food'),
+      makeTx('child', 'expense', 20, 'lunch'),
+      makeTx('grandchild', 'expense', 30, 'lunch-company'),
+      makeTx('wrong-type', 'income', 40, 'food'),
+      makeTx('other', 'expense', 50, 'salary'),
+      makeTx('uncategorized', 'expense', 60)
+    ]
+
+    it('父分类明细包含直接记账和所有后代，排除其他分类与类型', () => {
+      expect(transactionsForCategory('food', categories, txs, 'expense').map(t => t.id))
+        .toEqual(['direct', 'child', 'grandchild'])
+    })
+
+    it('末级分类只显示自己的交易，空分类返回空列表', () => {
+      expect(transactionsForCategory('lunch-company', categories, txs, 'expense').map(t => t.id))
+        .toEqual(['grandchild'])
+      expect(transactionsForCategory('breakfast', categories, txs, 'expense')).toEqual([])
+    })
+  })
 
   describe('collectDescendantIds', () => {
     it('收集所有后代', () => {

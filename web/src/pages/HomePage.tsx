@@ -1,12 +1,15 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
-import type { Category, TransactionType } from '../db/models'
+import type { Category, CategoryType } from '../db/models'
 import { filterByPeriod, stepPeriod } from '../utils/date'
 import type { StatPeriod } from '../utils/date'
 import { periodTotals } from '../utils/stats'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { useQuery } from '../hooks/useQuery'
+import { useCategories } from '../hooks/useLookup'
+import { usePageScrollRestoration } from '../hooks/usePageScrollRestoration'
+import { analysisPeriodParams, readAnalysisPeriod } from '../utils/analysisPeriod'
 import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
 import KpiGrid from '../components/KpiGrid'
@@ -21,11 +24,19 @@ import './HomePage.css'
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const [period, setPeriod] = useState<StatPeriod>('month')
-  const [date, setDate] = useState<Date>(new Date())
-  const [categoryTab, setCategoryTab] = useState<TransactionType>('expense')
+  const [params, setParams] = useSearchParams()
+  const { period, date } = useMemo(() => readAnalysisPeriod(params), [params])
+  const categoryTab: CategoryType = params.get('type') === 'income' ? 'income' : 'expense'
 
-  const { data: allTransactions = [] } = useQuery(() => transactionsApi.list(), [])
+  const { data: allTransactions = [], loading } = useQuery(() => transactionsApi.list(), [])
+  const { loading: categoriesLoading } = useCategories()
+  usePageScrollRestoration(!loading && !categoriesLoading)
+
+  const updateSelection = (nextPeriod: StatPeriod, nextDate: Date, type = categoryTab) => {
+    const next = analysisPeriodParams(nextPeriod, nextDate)
+    next.set('type', type)
+    setParams(next, { replace: true, preventScrollReset: true })
+  }
 
   const filtered = useMemo(
     () => filterByPeriod(allTransactions, period, date),
@@ -46,16 +57,10 @@ export default function HomePage() {
     [allTransactions]
   )
 
-  const onCategoryLeafClick = (category: Category) => {
-    const params = new URLSearchParams({ categoryId: category.id })
-    if (period === 'month') {
-      params.set('period', 'month')
-      params.set('month', `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
-    } else {
-      params.set('period', 'year')
-      params.set('year', String(date.getFullYear()))
-    }
-    navigate(`/transactions?${params.toString()}`)
+  const onCategoryClick = (category: Category) => {
+    navigate(`/analysis/categories/${encodeURIComponent(category.id)}?${analysisPeriodParams(period, date)}`, {
+      state: { analysisFrom: true }
+    })
   }
 
   return (
@@ -68,8 +73,8 @@ export default function HomePage() {
       <PeriodPicker
         period={period}
         date={date}
-        onPeriodChange={setPeriod}
-        onDateChange={setDate}
+        onPeriodChange={p => updateSelection(p, date)}
+        onDateChange={d => updateSelection(period, d)}
       />
 
       <KpiGrid current={totals} previous={prevTotals} period={period} />
@@ -94,13 +99,13 @@ export default function HomePage() {
           <div className="type-tab">
             <button
               className={categoryTab === 'expense' ? 'active' : ''}
-              onClick={() => setCategoryTab('expense')}
+              onClick={() => updateSelection(period, date, 'expense')}
             >
               支出
             </button>
             <button
               className={categoryTab === 'income' ? 'active' : ''}
-              onClick={() => setCategoryTab('income')}
+              onClick={() => updateSelection(period, date, 'income')}
             >
               收入
             </button>
@@ -109,7 +114,7 @@ export default function HomePage() {
             key={categoryTab}
             transactions={filtered}
             type={categoryTab}
-            onLeafClick={onCategoryLeafClick}
+            onCategoryClick={onCategoryClick}
           />
         </div>
       )}

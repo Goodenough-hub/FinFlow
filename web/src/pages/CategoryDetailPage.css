@@ -1,0 +1,56 @@
+.category-detail-page {
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.category-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.category-detail-header h1 { font-size: 16px; }
+.category-detail-back, .category-detail-header-spacer { width: 76px; }
+.category-detail-back {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--accent-blue);
+  font-size: 15px;
+}
+
+.category-detail-content { padding-bottom: 24px; }
+.category-detail-content > .card { margin-bottom: 20px; }
+.category-detail-summary { padding: 20px; }
+.category-detail-identity { display: flex; align-items: center; gap: 12px; }
+.category-detail-identity > div { min-width: 0; }
+.category-detail-identity h2 { font-size: 16px; overflow-wrap: anywhere; }
+.category-detail-path, .category-detail-meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+.category-detail-amount {
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 20px;
+  overflow-wrap: anywhere;
+}
+.category-detail-amount.income { color: var(--income-green); }
+.category-detail-amount.expense { color: var(--expense-gold); }
+.category-detail-list-header { display: flex; align-items: center; justify-content: space-between; margin: 24px 4px 12px; }
+.category-detail-list-header h2 { font-size: 14px; }
+.category-detail-list-header > span { color: var(--text-tertiary); font-size: 12px; }
+.category-detail-list { padding: 4px 14px; }
+.category-detail-transaction { display: block; width: 100%; text-align: left; }
+.category-detail-transaction:not(:last-child) { border-bottom: 1px solid var(--divider); }
+.category-detail-status { padding: 32px 20px; text-align: center; color: var(--text-secondary); }
+.category-detail-status button { margin-top: 12px; min-height: 44px; padding: 0 16px; color: var(--accent-blue); }
