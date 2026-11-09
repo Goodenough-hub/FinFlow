@@ -31,6 +31,7 @@
   --chart-text-muted: #71717a;
   --chart-axis: rgba(255, 255, 255, 0.15);
   --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-line: #60a5fa; /* 深色底上的折线色，比 --accent-blue 更亮 */
   
   /* Gradients */
   --gradient-card: linear-gradient(145deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.8) 100%);
@@ -94,6 +95,7 @@
   --chart-text-muted: #94a3b8;
   --chart-axis: rgba(0, 0, 0, 0.15);
   --chart-grid: rgba(0, 0, 0, 0.04);
+  --chart-line: #2563eb;
   
   --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
   --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -133,6 +135,7 @@
     --chart-text-muted: #94a3b8;
     --chart-axis: rgba(0, 0, 0, 0.15);
     --chart-grid: rgba(0, 0, 0, 0.04);
+    --chart-line: #2563eb;
     --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
     --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     --accent-tint: rgba(37, 99, 235, 0.08);

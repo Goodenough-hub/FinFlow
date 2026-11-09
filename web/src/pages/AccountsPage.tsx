@@ -13,6 +13,7 @@ import {
 import { asCurrency } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
 import { accountDisplayBalance } from '../utils/account'
+import { buildNetWorthHistory } from '../utils/netWorth'
 import { useTheme } from '../hooks/useTheme'
 import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
@@ -166,50 +167,26 @@ export default function AccountsPage() {
   }
 
   const netWorthHistory = useMemo(() => {
-    const sortedTx = allTransactions
-      .slice()
-      .filter(t => t.type !== 'transfer')
-      .sort((a, b) => a.date.localeCompare(b.date))
-    const baseTotal = sortedAccounts
-      .reduce((s, a) => s + a.initialBalance, 0)
-    const now = new Date()
-    const points: { label: string; value: number }[] = []
-    let cursor = 0
-    let running = baseTotal
-    for (let i = 11; i >= 0; i--) {
-      const m = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const isCurrent = i === 0
-      const endDay = isCurrent
-        ? now.getDate()
-        : new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate()
-      const endDateStr = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
-      while (cursor < sortedTx.length && sortedTx[cursor].date <= endDateStr) {
-        const t = sortedTx[cursor]
-        if (t.type === 'income') running += t.amount
-        else if (t.type === 'expense') running -= t.amount
-        cursor++
-      }
-      points.push({
-        label: `${m.getMonth() + 1}月`,
-        value: Math.round(running * 100) / 100
-      })
-    }
-    return points
-  }, [sortedAccounts, childrenMap, allTransactions])
+    const baseTotal = sortedAccounts.reduce((s, a) => s + a.initialBalance, 0)
+    return buildNetWorthHistory(allTransactions, baseTotal, new Date())
+  }, [sortedAccounts, allTransactions])
 
   const trendOption = useMemo(() => {
     const c = chartColors()
     const data = netWorthHistory
     return {
-      grid: { left: 8, right: 8, top: 16, bottom: 24 },
+      grid: { left: 14, right: 14, top: 16, bottom: 24 },
       tooltip: {
         trigger: 'axis',
         backgroundColor: c.tooltipBg,
         borderColor: c.tooltipBorder,
         borderWidth: 1,
         textStyle: { color: c.textPrimary, fontSize: 12 },
-        formatter: (params: Array<{ axisValue: string; value: number }>) =>
-          `${params[0]?.axisValue}<br/>¥${(params[0]?.value ?? 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`
+        formatter: (params: Array<{ dataIndex: number; value: number }>) => {
+          const p = params[0]
+          const point = p ? data[p.dataIndex] : undefined
+          return `${point?.ym ?? ''}<br/>¥${(p?.value ?? 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`
+        }
       },
       xAxis: {
         type: 'category',
@@ -218,7 +195,8 @@ export default function AccountsPage() {
         axisLabel: {
           color: c.textMuted,
           fontSize: 10,
-          interval: 1
+          // 点多时隔月显示，点少时全显示；末月始终带标签
+          interval: data.length > 8 ? 1 : 0
         },
         axisLine: { lineStyle: { color: c.axis } },
         axisTick: { show: false }
@@ -235,21 +213,29 @@ export default function AccountsPage() {
         {
           type: 'line',
           data: data.map(p => p.value),
-          smooth: true,
+          // 0.2 的弱平滑：既不折角，也不会像 smooth:true 那样在陡坎后过冲出假上扬
+          smooth: 0.2,
           symbol: 'circle',
           symbolSize: 6,
           showSymbol: false,
-          lineStyle: { color: c.accent, width: 2.5 },
-          itemStyle: { color: c.accent },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: c.accent + '40' },
-                { offset: 1, color: c.accent + '00' }
-              ]
-            }
+          // 深色卡片上半透明填充会糊成灰黑块，改为亮色线条 + 轻微辉光
+          lineStyle: {
+            color: c.chartLine,
+            width: 2.5,
+            shadowColor: c.chartLine,
+            shadowBlur: 10,
+            shadowOffsetY: 3
+          },
+          itemStyle: { color: c.chartLine },
+          markPoint: {
+            symbol: 'circle',
+            symbolSize: 7,
+            silent: true,
+            itemStyle: { color: c.chartLine, borderColor: c.bgCard, borderWidth: 2 },
+            label: { show: false },
+            data: data.length > 0
+              ? [{ coord: [data.length - 1, data[data.length - 1].value] }]
+              : []
           },
           emphasis: { focus: 'series' }
         }
@@ -309,10 +295,10 @@ export default function AccountsPage() {
         </div>
       </div>
 
-      {netWorthHistory.length > 0 && (
+      {netWorthHistory.length > 1 && (
         <div className="card trend-card">
           <div className="trend-header">
-            <span className="trend-title">净资产趋势 · 近 12 个月</span>
+            <span className="trend-title">净资产趋势 · 近 {netWorthHistory.length} 个月</span>
           </div>
           <ReactECharts
             option={trendOption}

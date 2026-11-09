@@ -11,12 +11,14 @@ function readVars(): Map<string, string> {
     '--chart-text-muted',
     '--chart-axis',
     '--chart-grid',
+    '--chart-line',
     '--income-green',
     '--expense-gold',
     '--accent-blue',
     '--transfer-blue',
     '--overspend-red',
     '--text-primary',
+    '--bg-card',
     '--bg-card-elevated'
   ]
   for (const k of keys) {
@@ -47,7 +49,10 @@ export function chartColors() {
     transfer: c.get('--transfer-blue') ?? '#5B8DEF',
     overspend: c.get('--overspend-red') ?? '#EF4444',
     textPrimary: c.get('--text-primary') ?? '#fff',
-    bgElevated: c.get('--bg-card-elevated') ?? '#222228'
+    bgCard: c.get('--bg-card') || '#18181b',
+    bgElevated: c.get('--bg-card-elevated') ?? '#222228',
+    // 深色底上折线需要更亮的蓝，--accent-blue 偏暗、对比度不足
+    chartLine: c.get('--chart-line') || '#60a5fa'
   }
 }
 
