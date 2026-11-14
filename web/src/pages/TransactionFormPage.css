@@ -114,6 +114,11 @@
 
 .amount-input {
   flex: 1;
+  /* input 有 size=20 的固有宽度（30px 字号约 360px），作为 flex 项默认
+     min-width:auto 不肯缩到这个宽度以下，窄屏上会撑出 .form-body；而
+     .form-body 是 overflow-y:auto 的滚动容器，overflow-x 随之被算成 auto，
+     于是出现横向滚动条。 */
+  min-width: 0;
   font-size: 30px;
   font-weight: 700;
   color: var(--text-primary);

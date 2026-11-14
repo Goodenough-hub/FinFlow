@@ -61,3 +61,27 @@ test('横向任何情况下不可滚动', async ({ page }) => {
   await page.evaluate(() => window.scrollTo(300, 0))
   expect(await page.evaluate(() => document.body.scrollLeft)).toBe(0)
 })
+
+// 回归：记一笔页的 .form-body 是自己的滚动容器（overflow-y:auto 让 overflow-x
+// 也算成 auto），不受 html/body 的 overflow-x:clip 保护。金额输入框曾因 input
+// 固有宽度 + flex min-width:auto 撑宽 .form-body，窄屏出现横向滚动条。
+test('记一笔页表单区横向不溢出', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('finflow_token', 'e2e-test-token'))
+  await page.route('https://fonts.googleapis.com/**', route => route.abort())
+  await page.route('**/api/v1/**', route => {
+    const path = new URL(route.request().url()).pathname
+    if (path === '/api/v1/auth/refresh') {
+      return route.fulfill({ json: {
+        token: 'e2e-test-token', userId: 'e2e', username: '测试用户',
+        role: 'user', appScope: ['finflow'], avatar: '', expiresAt: 9999999999,
+      } })
+    }
+    return route.fulfill({ json: [] })
+  })
+  await page.goto('/finflow/transactions/new')
+  const body = page.locator('.form-body')
+  await expect(body).toBeVisible()
+
+  const { scrollW, clientW } = await body.evaluate(el => ({ scrollW: el.scrollWidth, clientW: el.clientWidth }))
+  expect(scrollW).toBeLessThanOrEqual(clientW)
+})
