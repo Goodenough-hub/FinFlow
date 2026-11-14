@@ -188,6 +188,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;
   text-rendering: optimizeLegibility;
+  /* 关掉长按的系统菜单与选字：iOS 主屏幕 PWA 长按链接会弹预览/「在新标签页打开」，
+     点了会再开出一个页面；长按文字会选中并弹拷贝/查询。Android 的长按菜单由
+     utils/longPressMenu.ts 拦 contextmenu 处理。输入控件在下方恢复。 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* iOS 上祖先 user-select: none 会让输入框无法聚焦/选字，必须显式恢复 */
+input, textarea, [contenteditable=""], [contenteditable="true"] {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+a, img {
+  -webkit-user-drag: none;
 }
 
 /* Headings use Outfit for a modern tech feel.
