@@ -102,9 +102,10 @@
 .fab {
   position: fixed;
   right: 24px;
-  /* 统计栏 tx-summary-bar 是 fixed，手机端约从 72px 向上 ~60px。
-     把 FAB 抬到统计栏之上，避免压住最右侧的「笔数」。 */
-  bottom: calc(148px + env(safe-area-inset-bottom));
+  /* 统计栏 tx-summary-bar 是 fixed：bottom 与 padding-bottom 各含一份安全区，
+     手机端顶边约在 137px + 2×safe。FAB 必须同样计两份安全区再留间距，
+     否则 iPhone（safe≈34px）上会压住最右侧的「笔数」。 */
+  bottom: calc(156px + 2 * env(safe-area-inset-bottom));
   width: 56px;
   height: 56px;
   border-radius: 28px;
@@ -126,7 +127,7 @@
 
 @media (min-width: 640px) {
   .fab {
-    bottom: 168px;
+    bottom: calc(168px + env(safe-area-inset-bottom));
     right: calc(50% - 320px + 24px);
   }
 }
