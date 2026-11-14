@@ -12,7 +12,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // prompt：新 SW 停在 waiting，由 src/services/pwa.ts 决定何时接管。
+      // 不能用 autoUpdate / skipWaiting——新版本激活即 reload，会丢掉正在填写的表单。
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'favicon.png', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
         name: 'FinFlow · 个人记账',
@@ -61,7 +63,6 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/, /^\/finflow\/sw\.js/, /^\/finflow\/workbox-/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
         // 只保留静态资源的 runtime cache；catch-all StaleWhileRevalidate 已删——
         // precache 已按内容哈希覆盖所有 built assets，那条 SWR 反而会让 non-precache
         // 请求返回过期副本，加剧 UI 与 DB 版本 skew（见修复：brand: 前缀显示为字面量）。

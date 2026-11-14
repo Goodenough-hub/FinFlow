@@ -29,8 +29,6 @@ dev-dist/
 web/test-results/
 web/playwright-report/
 *.tsbuildinfo
-vite.config.d.ts
-vite.config.js
 
 # PWA generated
 web/public/icons/*.png

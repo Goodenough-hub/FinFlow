@@ -5,6 +5,7 @@ import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
 import { useCategories, refreshCategories } from '../hooks/useLookup'
 import { categoriesApi, transactionsApi } from '../api/finflow'
+import { showToast } from '../services/toast'
 import CategoryIcon from '../components/CategoryIcon'
 import './CategoriesPage.css'
 
@@ -97,7 +98,7 @@ export default function CategoriesPage() {
     const childCount = allCategories.filter(c => c.parentId === cat.id).length
     const txCount = txCountByCat.get(cat.id) ?? 0
     if (childCount > 0) {
-      alert(`此分类下有 ${childCount} 个子分类，请先删除子分类。`)
+      showToast(`此分类下有 ${childCount} 个子分类，请先删除子分类。`)
       return
     }
     if (txCount > 0) {

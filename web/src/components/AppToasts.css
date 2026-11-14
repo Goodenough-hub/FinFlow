@@ -1,4 +1,4 @@
-.pwa-toasts {
+.app-toasts {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
@@ -13,7 +13,7 @@
   pointer-events: none;
 }
 
-.pwa-toast {
+.app-toast {
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -30,7 +30,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.pwa-toast.offline {
+.app-toast.offline,
+.app-toast.info {
   background: rgba(99, 102, 110, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -38,7 +39,12 @@
   border: 0.5px solid rgba(255, 255, 255, 0.1);
 }
 
-.pwa-toast.update {
+.app-toast.error {
+  background: rgba(220, 38, 38, 0.95);
+  color: #fff;
+}
+
+.app-toast.update {
   background: linear-gradient(135deg, #5B8DEF 0%, #3B82F6 100%);
   color: #fff;
 }
@@ -64,6 +70,7 @@
   font-size: 12px;
   font-weight: 600;
   border-radius: 8px;
+  cursor: pointer;
   transition: all 0.12s;
 }
 
@@ -79,4 +86,15 @@
 
 .toast-btn:active {
   transform: scale(0.95);
+}
+
+.toast-close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  cursor: pointer;
 }

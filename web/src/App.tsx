@@ -18,7 +18,7 @@ import TripListPage from './pages/TripListPage'
 import TripReportPage from './pages/TripReportPage'
 import TripSpendPage from './pages/TripSpendPage'
 import LoginPage from './pages/LoginPage'
-import PWAToasts from './components/PWAToasts'
+import AppToasts from './components/AppToasts'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import { trackPageview } from './api/track'
@@ -60,7 +60,7 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <PWAToasts />
+      <AppToasts />
     </AuthProvider>
   )
 }

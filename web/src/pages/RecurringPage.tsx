@@ -5,6 +5,7 @@ import { asCurrency } from '../utils/format'
 import { toISODate, parseISODate } from '../utils/date'
 import { getLeafAccounts } from '../utils/account'
 import { computeNextDate } from '../services/recurring'
+import { showToast } from '../services/toast'
 import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
 import { useCategories, useAccounts } from '../hooks/useLookup'
@@ -52,10 +53,10 @@ export default function RecurringPage() {
     try {
       const result: any = await recurringApi.process()
       const count = typeof result === 'number' ? result : (result?.processed ?? 0)
-      alert(count > 0 ? `已生成 ${count} 笔交易` : '当前无需生成')
+      showToast(count > 0 ? `已生成 ${count} 笔交易` : '当前无需生成')
       reloadRecurring()
     } catch (e) {
-      alert(`生成失败：${(e as Error).message}`)
+      showToast(`生成失败：${(e as Error).message}`, { tone: 'error' })
     }
   }
 

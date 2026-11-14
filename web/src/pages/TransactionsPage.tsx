@@ -7,7 +7,7 @@ import type { StatPeriod } from '../utils/date'
 import { compareTransactionsByDateTimeDesc } from '../utils/transaction'
 import { asCurrency } from '../utils/format'
 import { useQuery } from '../hooks/useQuery'
-import { useConfirm } from '../hooks/useConfirm'
+import { deferWithUndo, showToast } from '../services/toast'
 import { transactionsApi } from '../api/finflow'
 import PeriodPicker from '../components/PeriodPicker'
 import TransactionRow from '../components/TransactionRow'
@@ -63,12 +63,42 @@ export default function TransactionsPage() {
   const [daySheet, setDaySheet] = useState<{ date: Date; items: Transaction[] } | null>(null)
 
   const { data: allTransactions = [], reload } = useQuery(() => transactionsApi.list(), [])
-  const { confirm, confirmElement } = useConfirm()
+  // 长按删除后先从列表隐藏，5 秒撤销窗口结束才真正调接口
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<ReadonlySet<string>>(() => new Set())
+
+  const visibleTransactions = useMemo(
+    () => (pendingDeleteIds.size === 0 ? allTransactions : allTransactions.filter(t => !pendingDeleteIds.has(t.id))),
+    [allTransactions, pendingDeleteIds]
+  )
 
   const periodTx = useMemo(
-    () => filterByPeriod(allTransactions, period, date),
-    [allTransactions, period, date]
+    () => filterByPeriod(visibleTransactions, period, date),
+    [visibleTransactions, period, date]
   )
+
+  const restoreTransaction = (id: string) => {
+    setPendingDeleteIds(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }
+
+  const handleDelete = (t: Transaction) => {
+    setPendingDeleteIds(prev => new Set(prev).add(t.id))
+    deferWithUndo({
+      message: '已删除 1 笔交易',
+      commit: async () => {
+        await transactionsApi.remove(t.id)
+        reload()
+      },
+      onUndo: () => restoreTransaction(t.id),
+      onError: e => {
+        restoreTransaction(t.id)
+        showToast(`删除失败：${(e as Error).message}`, { tone: 'error' })
+      }
+    })
+  }
 
   const filtered = useMemo(() => {
     const min = parseFloat(criteria.minAmount) || 0
@@ -285,11 +315,7 @@ export default function TransactionsPage() {
                       key={t.id}
                       transaction={t}
                       onNavigate={() => navigate(`/transactions/${t.id}`)}
-                      onDelete={async () => {
-                        if (!(await confirm('删除此交易？'))) return
-                        await transactionsApi.remove(t.id)
-                        reload()
-                      }}
+                      onDelete={() => handleDelete(t)}
                     />
                   ))}
                 </div>
@@ -325,8 +351,6 @@ export default function TransactionsPage() {
           onClose={() => setDaySheet(null)}
         />
       )}
-
-      {confirmElement}
     </div>
   )
 }
@@ -348,44 +372,48 @@ function formatDayHeader(dateStr: string): string {
 interface TxRowWithDeleteProps {
   transaction: Transaction
   onNavigate: () => void
-  onDelete: () => void | Promise<void>
+  onDelete: () => void
 }
 
+// 按住 700ms 进度条走满 =「待删除」，松手才删除；松手前滑动可取消。
+// 删除必须放在 touchend 里并 preventDefault：删除会让本行立即从列表消失，
+// 若在计时器里直接删，松手时浏览器合成的 click 会落到顶上来的下一行，误开它的详情页。
 function TxRowWithDelete({ transaction, onNavigate, onDelete }: TxRowWithDeleteProps) {
   const pressTimer = useRef<number | null>(null)
-  const longPressed = useRef(false)
+  const armed = useRef(false)
   const [holding, setHolding] = useState(false)
 
-  const startPress = () => {
-    longPressed.current = false
-    setHolding(true)
-    pressTimer.current = window.setTimeout(() => {
-      longPressed.current = true
-      setHolding(false)
-      onDelete()
-    }, 700)
-  }
-  const cancelPress = () => {
+  const resetPress = () => {
     setHolding(false)
+    armed.current = false
     if (pressTimer.current) {
       window.clearTimeout(pressTimer.current)
       pressTimer.current = null
     }
   }
+  const startPress = () => {
+    resetPress()
+    setHolding(true)
+    pressTimer.current = window.setTimeout(() => {
+      armed.current = true
+    }, 700)
+  }
+  const endPress = (e: React.TouchEvent) => {
+    const shouldDelete = armed.current
+    resetPress()
+    if (!shouldDelete) return
+    e.preventDefault()
+    onDelete()
+  }
 
   return (
     <div
       className={`tx-row-wrap${holding ? ' holding' : ''}`}
-      onClick={() => {
-        if (longPressed.current) {
-          longPressed.current = false
-          return
-        }
-        onNavigate()
-      }}
+      onClick={onNavigate}
       onTouchStart={startPress}
-      onTouchEnd={cancelPress}
-      onTouchMove={cancelPress}
+      onTouchEnd={endPress}
+      onTouchMove={resetPress}
+      onTouchCancel={resetPress}
     >
       <span className="tx-row-holdfill" aria-hidden="true" />
       <TransactionRow transaction={transaction} />

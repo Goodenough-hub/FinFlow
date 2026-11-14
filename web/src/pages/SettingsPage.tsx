@@ -10,6 +10,7 @@ import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
 import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
+import { showToast } from '../services/toast'
 import { getLeafAccounts, getChildrenMap } from '../utils/account'
 import { asCurrency } from '../utils/format'
 import AccountDot from '../components/AccountDot'
@@ -40,6 +41,8 @@ export default function SettingsPage() {
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations()
         await Promise.all(regs.map(r => r.update()))
+        // SW 是 prompt 模式，新版本会停在 waiting；强制刷新要显式让它接管
+        for (const r of regs) r.waiting?.postMessage({ type: 'SKIP_WAITING' })
       }
     } catch (e) {
       console.error('强制刷新失败:', e)
@@ -87,7 +90,7 @@ export default function SettingsPage() {
 
   const handleFillSample = async () => {
     if (txCount > 0) {
-      alert('已存在交易数据，无法填充示例。请先清空所有交易。')
+      showToast('已存在交易数据，无法填充示例。请先清空所有交易。')
       return
     }
     if (!(await confirm('填充最近 2 年（24 个月）示例交易数据？'))) return
@@ -95,12 +98,12 @@ export default function SettingsPage() {
     try {
       const ok = await fillSampleData(cats, accs)
       if (!ok) {
-        alert('填充失败：需要至少 1 个分类和 1 个非定期账户。')
+        showToast('填充失败：需要至少 1 个分类和 1 个非定期账户。', { tone: 'error' })
       } else {
-        alert('示例数据已填充')
+        showToast('示例数据已填充')
       }
     } catch (e) {
-      alert(`填充失败：${(e as Error).message}`)
+      showToast(`填充失败：${(e as Error).message}`, { tone: 'error' })
     } finally {
       setBusy(false)
     }
@@ -112,9 +115,9 @@ export default function SettingsPage() {
     setBusy(true)
     try {
       await Promise.all(txs.map(t => transactionsApi.remove(t.id)))
-      alert('已清空交易数据')
+      showToast('已清空交易数据')
     } catch (e) {
-      alert(`清空失败：${(e as Error).message}`)
+      showToast(`清空失败：${(e as Error).message}`, { tone: 'error' })
     } finally {
       setBusy(false)
     }
@@ -122,7 +125,7 @@ export default function SettingsPage() {
 
   const handleClearAccounts = async () => {
     if (accs.length === 0) {
-      alert('没有可清空的账户')
+      showToast('没有可清空的账户')
       return
     }
     if (!(await confirm(`清空所有账户？将删除全部 ${accs.length} 个账户及其关联交易，此操作不可恢复！`))) return
@@ -131,9 +134,9 @@ export default function SettingsPage() {
     try {
       await accountsApi.clear()
       await refreshAllLookups()
-      alert('已清空账户及关联交易')
+      showToast('已清空账户及关联交易')
     } catch (e) {
-      alert(`清空失败：${(e as Error).message}`)
+      showToast(`清空失败：${(e as Error).message}`, { tone: 'error' })
     } finally {
       setBusy(false)
     }
@@ -141,7 +144,7 @@ export default function SettingsPage() {
 
   const handleExportCSV = async () => {
     if (txs.length === 0) {
-      alert('没有可导出的交易')
+      showToast('没有可导出的交易')
       return
     }
     const csv = toCSV(txs, cats, accs)
@@ -166,7 +169,7 @@ export default function SettingsPage() {
       const catsIn = Array.isArray(data?.categories) ? data.categories : []
       const accsIn = Array.isArray(data?.accounts) ? data.accounts : []
       if (txsIn.length === 0 && catsIn.length === 0 && accsIn.length === 0) {
-        alert('未在备份中找到有效数据')
+        showToast('未在备份中找到有效数据', { tone: 'error' })
         return
       }
       if (!(await confirm(`将导入 ${txsIn.length} 笔交易、${catsIn.length} 个分类、${accsIn.length} 个账户。\n注意：备份中的旧 ID 会被忽略，将生成新 ID。当前数据不会被覆盖。\n是否继续？`))) return
@@ -182,9 +185,9 @@ export default function SettingsPage() {
       for (const t of txsIn) {
         try { await transactionsApi.create(stripId(t) as any); okTx++ } catch {}
       }
-      alert(`导入完成：${okTx} 笔交易、${okCat} 个分类、${okAcc} 个账户`)
+      showToast(`导入完成：${okTx} 笔交易、${okCat} 个分类、${okAcc} 个账户`)
     } catch (e) {
-      alert(`导入失败：${(e as Error).message}`)
+      showToast(`导入失败：${(e as Error).message}`, { tone: 'error' })
     } finally {
       setBusy(false)
     }

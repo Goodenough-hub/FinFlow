@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRegisterSW } from 'virtual:pwa-register/react'
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react'
+import { subscribeNeedRefresh, getNeedRefresh, applyUpdate, dismissUpdate } from '../services/pwa'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -14,17 +14,8 @@ export function usePWA() {
   )
   const installEventRef = useRef<BeforeInstallPromptEvent | null>(null)
 
-  const {
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker
-  } = useRegisterSW({
-    onRegisteredSW(url) {
-      console.log('SW registered:', url)
-    },
-    onRegisterError(error) {
-      console.error('SW registration failed:', error)
-    }
-  })
+  // SW 只在 services/pwa.ts 注册一次；这里只订阅「有新版本」状态，不再重复注册。
+  const needRefresh = useSyncExternalStore(subscribeNeedRefresh, getNeedRefresh)
 
   useEffect(() => {
     const handleOnline = () => setOffline(false)
@@ -66,22 +57,13 @@ export function usePWA() {
     return choice.outcome === 'accepted'
   }, [])
 
-  const update = useCallback(async () => {
-    await updateServiceWorker(true)
-    setNeedRefresh(false)
-  }, [updateServiceWorker, setNeedRefresh])
-
-  const dismissUpdate = useCallback(() => {
-    setNeedRefresh(false)
-  }, [setNeedRefresh])
-
   return {
     offline,
     canInstall,
     installed,
     needRefresh,
     install,
-    update,
+    update: applyUpdate,
     dismissUpdate
   }
 }
