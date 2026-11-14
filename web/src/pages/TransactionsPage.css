@@ -261,32 +261,30 @@
   transition: transform 700ms linear;
 }
 
+/* 悬浮在胶囊底栏上方 8px；--tabbar-* 由 MainLayout 的 .app-shell 提供 */
 .tx-summary-bar {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  width: 100%;
-  max-width: 640px;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  bottom: calc(var(--tabbar-bottom) + var(--tabbar-h) + 8px);
+  width: calc(100% - 32px);
+  max-width: 592px;
+  padding: 12px 16px;
   background: var(--glass-bg);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border-top: 1px solid var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   z-index: 50;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 640px) {
   .tx-summary-bar {
-    bottom: calc(96px + env(safe-area-inset-bottom));
     width: calc(100% - 48px);
-    border-radius: 20px;
-    border: 1px solid var(--glass-border);
-    padding-bottom: 12px;
   }
 }
 

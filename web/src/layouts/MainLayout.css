@@ -1,4 +1,7 @@
 .app-shell {
+  /* 悬浮胶囊底栏的尺寸，账单页统计栏与 FAB 依此叠放 */
+  --tabbar-h: 64px;
+  --tabbar-bottom: max(12px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -8,39 +11,41 @@
   transition: background 0.3s ease;
 }
 
-.app-main {
-  flex: 1;
-  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+@media (min-width: 640px) {
+  .app-shell {
+    --tabbar-h: 72px;
+    --tabbar-bottom: 24px;
+  }
 }
 
+.app-main {
+  flex: 1;
+  padding-bottom: calc(var(--tabbar-h) + var(--tabbar-bottom) + 16px);
+}
+
+/* 悬浮胶囊（仿支付宝液态玻璃底栏）。touch-action: none：在底栏上拖动透镜时页面不跟着滚 */
 .tab-bar {
   position: fixed;
-  bottom: 0;
+  bottom: var(--tabbar-bottom);
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 640px;
-  height: calc(72px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
+  width: calc(100% - 32px);
+  max-width: 592px;
+  height: var(--tabbar-h);
+  border-radius: calc(var(--tabbar-h) / 2);
   background: var(--glass-bg);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border-top: 1px solid var(--glass-border);
+  border: 1px solid var(--glass-border);
   display: flex;
   z-index: 100;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+  touch-action: none;
 }
 
-/* Optional: Make it floating instead of attached for a super premium feel */
 @media (min-width: 640px) {
   .tab-bar {
-    bottom: 24px;
     width: calc(100% - 48px);
-    height: 72px;
-    padding-bottom: 0;
-    border-radius: 36px;
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -99,13 +104,109 @@
   transform: scale(1);
 }
 
+/* 玻璃透镜：按住/拖动底栏时出现，比 Tab 略宽、上下各溢出 6px。
+   位置由 GlassTabBar 内联 transform 驱动，拖动中不加过渡以保证跟手。 */
+.tab-lens {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform;
+}
+
+/* 松手：弹簧吸附到最近 Tab 的中心，随后淡出（总时长与 SETTLE_MS 对齐） */
+.tab-lens.settling {
+  transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-lens-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  /* 随手速的横向拉伸，停手后回弹 */
+  transform: scale(var(--lens-sx, 1), var(--lens-sy, 1));
+  transition: transform 160ms var(--ease-out);
+  background: linear-gradient(180deg, var(--lens-tint-top), var(--lens-tint-bottom));
+  /* 模糊掉下方原尺寸的图标，只留透镜里放大的那份 */
+  backdrop-filter: blur(8px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(8px) saturate(180%) brightness(1.05);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.16),
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.45),
+    inset 0 0 10px rgba(255, 255, 255, 0.25);
+  animation: tab-lens-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-lens.settling .tab-lens-body {
+  animation: tab-lens-out 160ms ease-in 220ms forwards;
+}
+
+/* 透镜内的放大副本：与底栏同宽、按手指位置放大，由 overflow 裁成胶囊 */
+.tab-lens-content {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  display: flex;
+}
+
+/* 边缘色散：只描一圈蓝/粉渐变，模拟玻璃边缘的折射 */
+.tab-lens-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 210deg,
+    rgba(96, 165, 250, 0.7),
+    rgba(244, 114, 182, 0.55) 12%,
+    rgba(255, 255, 255, 0) 28%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(96, 165, 250, 0.6) 62%,
+    rgba(244, 114, 182, 0.5) 75%,
+    rgba(255, 255, 255, 0) 90%,
+    rgba(96, 165, 250, 0.7)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+@keyframes tab-lens-in {
+  from { scale: 0.8; opacity: 0; }
+  to { scale: 1; opacity: 1; }
+}
+
+@keyframes tab-lens-out {
+  from { scale: 1; opacity: 1; }
+  to { scale: 0.85; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-lens.settling,
+  .tab-lens-body {
+    transition: none;
+  }
+  .tab-lens-body {
+    transform: none;
+    animation: none;
+  }
+  .tab-lens.settling .tab-lens-body {
+    animation: none;
+  }
+}
+
 .fab {
   position: fixed;
   right: 24px;
-  /* 统计栏 tx-summary-bar 是 fixed：bottom 与 padding-bottom 各含一份安全区，
-     手机端顶边约在 137px + 2×safe。FAB 必须同样计两份安全区再留间距，
-     否则 iPhone（safe≈34px）上会压住最右侧的「笔数」。 */
-  bottom: calc(156px + 2 * env(safe-area-inset-bottom));
+  /* 叠在账单页统计栏 tx-summary-bar 之上：底栏 + 8px 间隔 + 统计栏约 65px + 16px 留白，
+     否则会压住统计栏最右侧的「笔数」 */
+  bottom: calc(var(--tabbar-bottom) + var(--tabbar-h) + 89px);
   width: 56px;
   height: 56px;
   border-radius: 28px;
@@ -127,7 +228,6 @@
 
 @media (min-width: 640px) {
   .fab {
-    bottom: calc(168px + env(safe-area-inset-bottom));
     right: calc(50% - 320px + 24px);
   }
 }
