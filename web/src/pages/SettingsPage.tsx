@@ -8,12 +8,14 @@ import { useTheme } from '../hooks/useTheme'
 import type { ThemeMode } from '../theme'
 import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
+import { useHideAmount } from '../hooks/useHideAmount'
 import { useAccounts, useCategories, refreshAllLookups } from '../hooks/useLookup'
 import { transactionsApi, categoriesApi, accountsApi } from '../api/finflow'
 import { showToast } from '../services/toast'
 import { getLeafAccounts, getChildrenMap } from '../utils/account'
 import { asCurrency } from '../utils/format'
 import AccountDot from '../components/AccountDot'
+import HideAmountToggle from '../components/HideAmountToggle'
 import AvatarPicker from '../components/AvatarPicker'
 import './SettingsPage.css'
 
@@ -29,6 +31,7 @@ export default function SettingsPage() {
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const { confirm, confirmElement } = useConfirm()
+  const { hideAmount } = useHideAmount()
 
   const handleForceRefresh = async () => {
     if (refreshing) return
@@ -216,7 +219,7 @@ export default function SettingsPage() {
           <div className="profile-meta">
             <span className="profile-role">{user?.role === 'admin' ? '管理员' : '用户'}</span>
             <span className="profile-sep">·</span>
-            <span>总资产 {asCurrency(totalAssets)}</span>
+            <span>总资产 {hideAmount ? '∗∗∗∗' : asCurrency(totalAssets)}</span>
           </div>
         </div>
         <span className="profile-chevron">›</span>
@@ -232,7 +235,10 @@ export default function SettingsPage() {
       )}
 
       <section className="settings-group">
-        <div className="group-title">账户</div>
+        <div className="group-title group-title-row">
+          <span>账户</span>
+          <HideAmountToggle />
+        </div>
         <div className="card group-card">
           {accs.length === 0 && (
             <div className="stat-row" style={{ justifyContent: 'center', color: 'var(--text-tertiary)' }}>
@@ -256,7 +262,7 @@ export default function SettingsPage() {
               <AccountDot type={a.type} icon={a.icon} colorHex={a.colorHex} size={32} />
               <span className="action-label">{a.name}</span>
               <span className="action-value">
-                {asCurrency(
+                {hideAmount ? '∗∗∗∗' : asCurrency(
                   (balances.get(a.id) ?? 0)
                     + (childrenMap.get(a.id) ?? []).reduce(
                         (s, k) => s + (balances.get(k.id) ?? 0),

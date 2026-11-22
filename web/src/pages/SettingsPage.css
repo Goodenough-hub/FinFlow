@@ -175,6 +175,17 @@
   padding: 0 16px 8px;
 }
 
+.group-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 眼睛按钮 28px 高于标题行，负边距抵消，保持与其他分组标题同高 */
+.group-title-row .eye-btn {
+  margin: -6px -5px -6px 0;
+}
+
 .group-card {
   padding: 8px 16px;
   margin-bottom: 0;

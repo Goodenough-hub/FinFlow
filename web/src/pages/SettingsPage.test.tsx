@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import type { Account } from '../db/models'
+import { setHideAmount } from '../utils/amountVisibility'
 import SettingsPage from './SettingsPage'
 
 // 回归：我的页账户行用 account-dot 文字圆（与资产页同源），
@@ -42,7 +43,7 @@ const account: Account = {
   type: 'alipay',
   icon: '支',
   colorHex: '#1677FF',
-  initialBalance: 0,
+  initialBalance: 1234,
   sortOrder: 0,
   isSystem: false,
   parentId: undefined,
@@ -78,6 +79,33 @@ describe('我的页账户图标用 account-dot 文字圆', () => {
     expect(dot?.textContent).toContain('支')
     // 不应渲染账户 SVG
     expect(container.querySelector('img[src*="/icons/accounts/"]')).toBeNull()
+  })
+})
+
+describe('我的页账户金额隐藏', () => {
+  beforeEach(() => {
+    cleanup()
+    setHideAmount(false)
+  })
+
+  it('点击账户分组的眼睛后，账户余额与总资产都被隐藏，再点恢复', () => {
+    const { container, getByLabelText } = renderPage()
+    const value = () => container.querySelector('.action-value')?.textContent
+    expect(value()).toContain('1,234')
+
+    fireEvent.click(getByLabelText('隐藏金额'))
+    expect(value()).toBe('∗∗∗∗')
+    expect(container.querySelector('.profile-meta')?.textContent).not.toContain('1,234')
+
+    fireEvent.click(getByLabelText('显示金额'))
+    expect(value()).toContain('1,234')
+  })
+
+  it('与资产页共用状态：资产页已隐藏时，进入我的页直接是隐藏', () => {
+    setHideAmount(true)
+    const { container, getByLabelText } = renderPage()
+    expect(container.querySelector('.action-value')?.textContent).toBe('∗∗∗∗')
+    expect(getByLabelText('显示金额')).not.toBeNull()
   })
 })
 

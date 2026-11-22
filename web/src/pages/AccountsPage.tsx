@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import type { Account, AccountType, BankPreset } from '../db/models'
 import {
@@ -13,15 +12,16 @@ import {
 import { asCurrency } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
 import { accountDisplayBalance } from '../utils/account'
-import { loadHideAmount, saveHideAmount } from '../utils/amountVisibility'
 import { buildNetWorthHistory } from '../utils/netWorth'
 import { useTheme } from '../hooks/useTheme'
 import { useQuery } from '../hooks/useQuery'
 import { useConfirm } from '../hooks/useConfirm'
+import { useHideAmount } from '../hooks/useHideAmount'
 import { useAccounts, refreshAccounts } from '../hooks/useLookup'
 import { accountsApi, transactionsApi } from '../api/finflow'
 import AccountDot from '../components/AccountDot'
 import AddSubAccountDialog from '../components/AddSubAccountDialog'
+import HideAmountToggle from '../components/HideAmountToggle'
 import './AccountsPage.css'
 
 type DialogState =
@@ -51,7 +51,7 @@ export default function AccountsPage() {
   const { confirm, confirmElement } = useConfirm()
 
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
-  const [hideAmount, setHideAmount] = useState(loadHideAmount)
+  const { hideAmount } = useHideAmount()
   const [editMode, setEditMode] = useState(false)
   const [addingChildFor, setAddingChildFor] = useState<Account | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -270,17 +270,7 @@ export default function AccountsPage() {
       <div className="card assets-summary">
         <div className="assets-label-row">
           <span className="assets-label">总资产</span>
-          <button
-            className="eye-btn"
-            onClick={() => {
-              const next = !hideAmount
-              setHideAmount(next)
-              saveHideAmount(next)
-            }}
-            aria-label={hideAmount ? '显示金额' : '隐藏金额'}
-          >
-            {hideAmount ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
-          </button>
+          <HideAmountToggle />
         </div>
         <div className="assets-amount">{hideAmount ? '¥ ∗ ∗ ∗ ∗' : asCurrency(totalAssets)}</div>
         <div className="assets-breakdown">
