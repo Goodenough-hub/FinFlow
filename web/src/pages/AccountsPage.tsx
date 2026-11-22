@@ -13,6 +13,7 @@ import {
 import { asCurrency } from '../utils/format'
 import { chartColors } from '../utils/chartTheme'
 import { accountDisplayBalance } from '../utils/account'
+import { loadHideAmount, saveHideAmount } from '../utils/amountVisibility'
 import { buildNetWorthHistory } from '../utils/netWorth'
 import { useTheme } from '../hooks/useTheme'
 import { useQuery } from '../hooks/useQuery'
@@ -50,7 +51,7 @@ export default function AccountsPage() {
   const { confirm, confirmElement } = useConfirm()
 
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' })
-  const [hideAmount, setHideAmount] = useState(false)
+  const [hideAmount, setHideAmount] = useState(loadHideAmount)
   const [editMode, setEditMode] = useState(false)
   const [addingChildFor, setAddingChildFor] = useState<Account | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -271,7 +272,11 @@ export default function AccountsPage() {
           <span className="assets-label">总资产</span>
           <button
             className="eye-btn"
-            onClick={() => setHideAmount(v => !v)}
+            onClick={() => {
+              const next = !hideAmount
+              setHideAmount(next)
+              saveHideAmount(next)
+            }}
             aria-label={hideAmount ? '显示金额' : '隐藏金额'}
           >
             {hideAmount ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
